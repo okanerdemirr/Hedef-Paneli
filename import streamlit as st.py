@@ -5,11 +5,11 @@ import plotly.express as px
 # requirements: streamlit, pandas, plotly, openpyxl
 
 st.set_page_config(
-    page_title="Pano", 
+    page_title="Temsilci Performans Paneli", 
     layout="wide"
 )
 
-# Premium modern tema CSS kodları
+# Premium modern koyu tema CSS entegrasyonu
 st.markdown("""
     <style>
         .main-title { font-size: 34px !important; font-weight: 800 !important; color: #ffffff; margin-bottom: 2px; letter-spacing: -0.5px; }
@@ -50,10 +50,7 @@ st.markdown('<div class="subtitle">Şirket genel hedefleri ve dinamik temsilci p
 st.sidebar.markdown("### ⚙️ Veri Kontrol Paneli")
 arama_filtresi = st.sidebar.text_input("👤 Temsilci Ara (Dinamik)", "").strip().lower()
 
-if st.sidebar.button("🔄 Verileri Yenile / Sıfırla"):
-    st.cache_data.clear()
-    st.rerun()
-
+# --- YARDIMCI KONTROL FONKSİYONLARI ---
 def clean_val(val):
     if pd.isna(val): 
         return 0
@@ -91,3 +88,12 @@ def tr_lower(text):
     for k, v in mapping.items():
         text = text.replace(k, v)
     return text.lower()
+
+# --- HİBRİT VERİ MOTORU (GitHub + Manuel Yükleme) ---
+uploaded_file = None
+
+# 1. Aşama: GitHub'dan Otomatik Çekmeyi Dene
+github_urls = [
+    "https://raw.githubusercontent.com/okanerdemirr/Hedef-Paneli/main/veri.xlsx.xlsx",
+    "https://raw.githubusercontent.com/okanerdemirr/Hedef-Paneli/main/veri.xlsx",
+    "https://raw.githubusercontent.
