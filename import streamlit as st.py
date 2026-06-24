@@ -51,18 +51,3 @@ st.sidebar.markdown("### ⚙️ Veri Kontrol Paneli")
 arama_filtresi = st.sidebar.text_input("👤 Temsilci Ara (Dinamik)", "").strip().lower()
 
 # --- YARDIMCI KONTROL FONKSİYONLARI ---
-def clean_val(val):
-    if pd.isna(val): 
-        return 0
-    v_str = str(val).strip()
-    if v_str in ['None', 'nan', '-', '']: 
-        return 0
-    if '%' in v_str:
-        try: 
-            return float(v_str.replace('%', '').replace(',', '.')) / 100
-        except: 
-            return 0
-    try: 
-        return float(v_str.replace(',', '.')) if '.' in v_str or ',' in v_str else int(v_str)
-    except: 
-        return
