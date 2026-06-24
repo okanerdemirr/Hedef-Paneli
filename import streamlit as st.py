@@ -74,9 +74,20 @@ def format_val(val, col_name):
     c_lower = str(col_name).lower()
     if 'oran' in c_lower or '%' in c_lower or 'başarı' in c_lower:
         if val <= 1:
-            return f"{val:.1%}"
+            return "{:.1%}".format(val)
         else:
-            return f"{val:.1f}%"
+            return "{:.1f}%".format(val)
     if isinstance(val, (int, float)):
         if val == int(val):
-            return f"{int(val):,
+            return "{:,}".format(int(val))
+        return "{:,.2f}".format(val)
+    return str(val)
+
+def tr_lower(text):
+    if not text:
+        return ""
+    text = str(text).strip()
+    mapping = {"İ": "i", "I": "ı", "Ş": "ş", "Ğ": "ğ", "Ü": "ü", "Ç": "ç"}
+    for k, v in mapping.items():
+        text = text.replace(k, v)
+    return text.lower()
