@@ -94,4 +94,41 @@ def tr_lower(text):
     text = text.replace("İ", "i").replace("I", "ı").replace("Ş", "ş").replace("Ğ", "ğ").replace("Ü", "ü").replace("Ç", "ç")
     return text.lower()
 
-# --- OTOMATİK ARKA PLAN DOSYA MOTORU
+# --- OTOMATİK ARKA PLAN DOSYA MOTORU ---
+uploaded_file = None
+kaynak_baglantilar = [
+    "https://raw.githubusercontent.com/okanerdemirr/Hedef-Paneli/main/veri.xlsx.xlsx",
+    "https://raw.githubusercontent.com/okanerdemirr/Hedef-Paneli/main/veri.xlsx",
+    "https://raw.githubusercontent.com/okanerdemirr/Hedef-Paneli/main/veri"
+]
+
+for url in kaynak_baglantilar:
+    try:
+        uploaded_file = pd.ExcelFile(url)
+        if uploaded_file is not None:
+            break
+    except:
+        continue
+
+# --- MAIN ENGINE ---
+if uploaded_file is not None:
+    all_sheets = uploaded_file.sheet_names
+
+    kpi_toplamlar = {
+        "Lead": {"hedef": 0, "gerceklesen": 0, "oran_val": 0},
+        "Gelen Rezervasyon": {"hedef": 0, "gerceklesen": 0, "oran_val": 0},
+        "Satış": {"hedef": 0, "gerceklesen": 0, "oran_val": 0},
+        "Kriter Dışı": {"hedef": 0, "gerceklesen": 0, "oran_val": 0},
+        "Gelme Oranı": {"hedef": 0, "gerceklesen": 0, "oran_val": 0}
+    }
+    
+    if "Genel Hedef" in all_sheets:
+        df_g = pd.read_excel(uploaded_file, sheet_name="Genel Hedef", header=None)
+        for r in range(len(df_g)):
+            h_adi = tr_lower(df_g.iloc[r, 0]).replace('\n', ' ')
+            if not h_adi or h_adi == 'nan': 
+                continue
+            
+            v1 = clean_val(df_g.iloc[r, 1])
+            v2 = clean_val(df_g.iloc[r, 2])
+            v3 = clean_val(df_g.iloc[r, 3]) if df_g.shape[1]
