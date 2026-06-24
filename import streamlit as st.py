@@ -131,4 +131,144 @@ if uploaded_file is not None:
             
             v1 = clean_val(df_g.iloc[r, 1])
             v2 = clean_val(df_g.iloc[r, 2])
-            v3 = clean_val(df_g.iloc[r, 3]) if df_g.shape[1]
+            v3 = clean_val(df_g.iloc[r, 3]) if df_g.shape[1] > 3 else 0
+            
+            oran_val = v3 if v3 > 0 else (v2 / v1 if v1 > 0 else 0)
+            is_kpi = any(x in h_adi for x in ["lead", "rezervasyon", "hedef"])
+            
+            if oran_val > 1 and not is_kpi:
+                oran_val = oran_val / 100
+
+            if "lead" in h_adi:
+                kpi_toplamlar["Lead"] = {"hedef": v1, "gerceklesen": v2, "oran_val": oran_val}
+            elif "gelen" in h_adi and "rezerv" in h_adi:
+                kpi_toplamlar["Gelen Rezervasyon"] = {"hedef": v1, "gerceklesen": v2, "oran_val": oran_val}
+            elif "sat" in h_adi:
+                kpi_toplamlar["Satış"] = {"hedef": v1, "gerceklesen": v2, "oran_val": oran_val}
+            elif "kriter" in h_adi:
+                kpi_toplamlar["Kriter Dışı"] = {"hedef": v1 if v1 <= 1 else v1/100, "gerceklesen": v2 / 100 if v2 > 1 else v2, "oran_val": v2/100 if v2 > 1 else v2}
+            elif "gelme" in h_adi:
+                kpi_toplamlar["Gelme Oranı"] = {"hedef": v1 if v1 <= 1 else v1/100, "gerceklesen": v2 / 100 if v2 > 1 else v2, "oran_val": v2/100 if v2 > 1 else v2}
+
+    st.markdown('<div class="section-title">⚡ Şirket Genel Performans Matrisi</div>', unsafe_allow_html=True)
+    ana_kpi_sirasi = ["Lead", "Gelen Rezervasyon", "Satış", "Kriter Dışı", "Gelme Oranı"]
+    cols = st.columns(len(ana_kpi_sirasi))
+    
+    for idx, name in enumerate(ana_kpi_sirasi):
+        with cols[idx]:
+            st.markdown('<div class="card-title">💎 {}</div>'.format(name), unsafe_allow_html=True)
+            h_data = kpi_toplamlar[name]["hedef"]
+            g_data = kpi_toplamlar[name]["gerceklesen"]
+            o_data = kpi_toplamlar[name]["oran_val"]
+            
+            if name in ["Gelme Oranı", "Kriter Dışı"]:
+                h_str = "Hedef: {:.1%}".format(h_data) if h_data <= 1 else "Hedef: {:.1f}%".format(h_data)
+                g_str = "{:.1%}".format(g_data) if g_data <= 1 else "{:.1f}%".format(g_data)
+                st.markdown('<div style="color:#94a3b8; font-size:13px; margin-bottom:5px;">{}</div>'.format(h_str), unsafe_allow_html=True)
+                st.metric(label="", value=g_str, delta="Gerçekleşen", delta_color="normal")
+            else:
+                h_str = "Hedef: {:,}".format(int(h_data))
+                g_str = "{:,}".format(int(g_data))
+                st.markdown('<div style="color:#94a3b8; font-size:13px; margin-bottom:5px;">{}</div>'.format(h_str), unsafe_allow_html=True)
+                st.metric(label="", value=g_str, delta="Başarı: {:.1%}".format(o_data), delta_color="normal")
+
+    st.markdown('<hr style="border-top: 1px solid #334155; margin-top:30px; margin-bottom:20px;">', unsafe_allow_html=True)
+    st.markdown('<div class="section-title">👥 Temsilci Performans Kırılımları</div>', unsafe_allow_html=True)
+
+    hedef_sayfalari = [s for s in all_sheets if ("hedef" in s.lower() or "analiz" in s.lower() or "ulasim" in s.lower() or "ulaşım" in s.lower()) and "genel" not in s.lower()]
+    
+    if hedef_sayfalari:
+        sekme_isimleri = [sheet.replace("Hedef", "").replace("hedef", "").strip() for sheet in hedef_sayfalari]
+        sekmeler = st.tabs(sekme_isimleri)
+        
+        for idx, sheet in enumerate(hedef_sayfalari):
+            with sekmeler[idx]:
+                df_sheet = pd.read_excel(uploaded_file, sheet_name=sheet, header=None)
+                if len(df_sheet) == 0:
+                    continue
+                    
+                tablo_basligi = sekme_isimleri[idx]
+                sutun_isimleri = [str(df_sheet.iloc[0, col_idx]).strip() for col_idx in range(df_sheet.shape[1])]
+                sutun_isimleri = [name if (name and name != 'nan') else "Sütun {}".format(i) for i, name in enumerate(sutun_isimleri)]
+                
+                kpi_tablo_rows = []
+                toplam_satir_data = None
+                
+                for r in range(1, len(df_sheet)):
+                    t_isim = str(df_sheet.iloc[r, 0]).strip()
+                    t_isim_lower = tr_lower(t_isim)
+                    
+                    if not t_isim or t_isim == '' or t_isim_lower == 'nan':
+                        continue
+                        
+                    row_data = {}
+                    row_data[sutun_isimleri[0]] = t_isim
+                    
+                    for col_idx in range(1, df_sheet.shape[1]):
+                        raw_val = df_sheet.iloc[r, col_idx]
+                        cleaned = clean_val(raw_val)
+                        row_data[sutun_isimleri[col_idx]] = cleaned
+                    
+                    if 'toplam' in t_isim_lower or 'genel' in t_isim_lower:
+                        row_data[sutun_isimleri[0]] = '🔴 Genel Toplam'
+                        formatted_toplam = {}
+                        for k, v in row_data.items():
+                            if k == sutun_isimleri[0]:
+                                formatted_toplam[k] = v
+                            else:
+                                formatted_toplam[k] = format_val(v, k)
+                        toplam_satir_data = formatted_toplam
+                        continue
+                    
+                    if arama_filtresi == "" or arama_filtresi in t_isim_lower:
+                        kpi_tablo_rows.append(row_data)
+                
+                grafik_df = pd.DataFrame(kpi_tablo_rows).copy()
+                
+                formatted_rows = []
+                for row in kpi_tablo_rows:
+                    f_row = {}
+                    for k, v in row.items():
+                        if k == sutun_isimleri[0]:
+                            f_row[k] = v
+                        else:
+                            f_row[k] = format_val(v, k)
+                    formatted_rows.append(f_row)
+                    
+                if toplam_satir_data and arama_filtresi == "":
+                    formatted_rows.append(toplam_satir_data)
+                    
+                if len(formatted_rows) > 0 and not (len(formatted_rows) == 1 and formatted_rows[0][sutun_isimleri[0]] == '🔴 Genel Toplam'):
+                    st.markdown("#### 📁 {} Veri Seti".format(tablo_basligi))
+                    kpi_tablo_df = pd.DataFrame(formatted_rows)
+                    
+                    st.dataframe(kpi_tablo_df, width="stretch", hide_index=True)
+                    
+                    y_ekseni = sutun_isimleri[1:-1] if ('oran' in sutun_isimleri[-1].lower() or '%' in sutun_isimleri[-1].lower()) else sutun_isimleri[1:]
+                    
+                    if not grafik_df.empty and len(y_ekseni) > 0:
+                        fig = px.bar(
+                            grafik_df, 
+                            x=sutun_isimleri[0], 
+                            y=y_ekseni, 
+                            barmode='group', 
+                            template="plotly_dark", 
+                            height=300,
+                            color_discrete_sequence=["#475569", "#38bdf8", "#0284c7", "#f1f5f9"]
+                        )
+                        
+                        fig.update_layout(
+                            margin=dict(l=20, r=20, t=20, b=20),
+                            legend_title_text='',
+                            paper_bgcolor='rgba(0,0,0,0)',
+                            plot_bgcolor='rgba(0,0,0,0)'
+                        )
+                        
+                        st.plotly_chart(fig, width="stretch", use_container_width=True)
+    else:
+        st.info("ℹ️ Temsilci hedeflerine ait detaylı alt sayfalar bulunamadı.")
+else:
+    # Sayfanın sonsuza kadar donmasını engelleyen akıllı uyarı mesajı:
+    st.markdown("---")
+    st.warning("⚠️ **GitHub Deponuzdaki Excel Dosyası Okunamadı!**")
+    st.info("💡 **Çözüm:** Bilgisayarınızdaki güncel Excel dosyasının adını küçük harflerle tamamen **`veri.xlsx`** yapın ve GitHub'a yükleyin. Sistem dosyayı algıladığı an paneliniz anında açılacaktır.")
