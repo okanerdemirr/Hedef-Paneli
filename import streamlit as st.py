@@ -58,4 +58,27 @@ if df is not None:
     if temsilci_sutunu:
         temsilciler = ["Hepsi"] + sorted(df[temsilci_sutunu].unique().tolist())
         secilen_temsilci = st.selectbox("İncelemek İstediğiniz Temsilciyi Seçin:", temsilciler)
-        df_filtrelenmis = df[df[temsilci_sutunu] == secilen_temsilci] if
+        
+        # Hatalı satır düzeltildi:
+        if secilen_temsilci != "Hepsi":
+            df_filtrelenmis = df[df[temsilci_sutunu] == secilen_temsilci]
+        else:
+            df_filtrelenmis = df
+    else:
+        df_filtrelenmis = df
+        st.info("Filtreleme sütunu otomatik algılanamadı, tüm veriler listeleniyor.")
+
+    st.markdown('<div class="section-title">📈 Performans Grafikleri ve Veri Tablosu</div>', unsafe_allow_html=True)
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.markdown('<div class="card-title">Genel Dağılım Grafiği</div>', unsafe_allow_html=True)
+        if len(df_filtrelenmis.columns) >= 2:
+            fig = px.bar(df_filtrelenmis, x=df_filtrelenmis.columns[0], y=df_filtrelenmis.columns[1], template="plotly_dark")
+            st.plotly_chart(fig, use_container_width=True)
+            
+    with col2:
+        st.markdown('<div class="card-title">Detaylı Veri Listesi</div>', unsafe_allow_html=True)
+        st.dataframe(df_filtrelenmis, use_container_width=True)
+else:
+    st.error("GitHub üzerinde 'veri' veya 'veri.xlsx.xlsx' dosyası bulunamadı.")
