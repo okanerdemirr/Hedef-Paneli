@@ -5,72 +5,96 @@ import plotly.express as px
 # requirements: streamlit, pandas, plotly, openpyxl
 
 st.set_page_config(
-    page_title="Pano",
+    page_title="Pano", 
     layout="wide"
 )
 
 # Premium modern tema CSS kodları
 st.markdown("""
-<style>
-    .main-title { font-size: 34px !important; font-weight: 800 !important; color: #ffffff; margin-bottom: 2px; letter-spacing: -0.5px; }
-    .subtitle { font-size: 14px !important; color: #94a3b8; margin-bottom: 25px; }
-    .section-title { font-size: 22px !important; font-weight: 700 !important; color: #38bdf8; margin-top: 30px; margin-bottom: 18px; border-left: 5px solid #38bdf8; padding-left: 12px; }
-    div[data-testid="column"] {
-        background-color: #1e293b !important;
-        border: 1px solid #334155 !important;
-        padding: 20px !important;
-        border-radius: 12px !important;
-        box-shadow: 0 4px 6px -1px rgba(0,0,0, 0.1) !important;
-    }
-    .card-title { font-size: 14px !important; font-weight: 700 !important; color: #38bdf8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
-    div[data-testid="stMetricLabel"] { display: none !important; }
-    div[data-testid="stMetricValue"] { font-size: 28px !important; font-weight: 700 !important; color: #ffffff !important; }
-</style>
+    <style>
+        .main-title { font-size: 34px !important; font-weight: 800 !important; color: #ffffff; margin-bottom: 2px; letter-spacing: -0.5px; }
+        .subtitle { font-size: 14px !important; color: #94a3b8; margin-bottom: 25px; }
+        .section-title { font-size: 22px !important; font-weight: 700 !important; color: #38bdf8; margin-top: 30px; margin-bottom: 18px; border-left: 5px solid #38bdf8; padding-left: 12px; }
+        div[data-testid="column"] {
+            background-color: #1e293b !important;
+            border: 1px solid #334155 !important;
+            padding: 20px !important;
+            border-radius: 12px !important;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
+        }
+        .card-title { font-size: 14px !important; font-weight: 700 !important; color: #38bdf8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+        div[data-testid="stMetricLabel"] { display: none !important; }
+        div[data-testid="stMetricValue"] { font-size: 28px !important; font-weight: 700 !important; color: #ffffff !important; }
+        div[data-testid="stMetricDelta"] > div {
+            background-color: rgba(16, 185, 129, 0.15) !important;
+            color: #10b981 !important;
+            padding: 4px 10px !important;
+            border-radius: 6px !important;
+            font-weight: 600 !important;
+        }
+    </style>
 """, unsafe_allow_html=True)
 
 st.markdown('<div class="main-title">📊 Temsilci Performans Kontrol Paneli</div>', unsafe_allow_html=True)
 st.markdown('<div class="subtitle">Şirket genel hedefleri ve dinamik temsilci performans matrisi</div>', unsafe_allow_html=True)
 
+# --- SIDEBAR CONTROL PANEL ---
+st.sidebar.markdown("### ⚙️ Veri Kontrol Paneli")
+
+# YUKARIDAN FILE_UPLOADER KALDIRILDI, SADECE ARAMA FİLTRESİ VE TEMİZLEME BUTONU KALDI
+arama_filtresi = st.sidebar.text_input("👤 Temsilci Ara (Dinamik)", "").strip().lower()
+
+if st.sidebar.button("🔄 Verileri Yenile / Sıfırla"):
+    st.cache_data.clear()
+    st.rerun()
+
+def clean_val(val):
+    if pd.isna(val): 
+        return 0
+    v_str = str(val).strip()
+    if v_str in ['None', 'nan', '-', '']: 
+        return 0
+    if '%' in v_str:
+        try: 
+            return float(v_str.replace('%', '').replace(',', '.')) / 100
+        except: 
+            return 0
+    try: 
+        return float(v_str.replace(',', '.')) if '.' in v_str or ',' in v_str else int(v_str)
+    except: 
+        return 0
+
+def format_val(val, col_name):
+    c_lower = str(col_name).lower()
+    if 'oran' in c_lower or '%' in c_lower or 'başarı' in c_lower:
+        if val <= 1:
+            return f"{val:.1%}"
+        else:
+            return f"{val:.1f}%"
+    if isinstance(val, (int, float)):
+        if val == int(val):
+            return f"{int(val):,}"
+        return f"{val:,.2f}"
+    return str(val)
+
+def tr_lower(text):
+    if not text:
+        return ""
+    text = str(text).strip()
+    mapping = {"İ": "i", "I": "ı", "Ş": "ş", "Ğ": "ğ", "Ü": "ü", "Ç": "ç"}
+    for k, v in mapping.items():
+        text = text.replace(k, v)
+    return text.lower()
+
+# --- OTOMATİK ARKA PLAN DOSYA MOTORU ---
 urls = [
     "https://raw.githubusercontent.com/okanerdemirr/Hedef-Paneli/main/veri.xlsx.xlsx",
     "https://raw.githubusercontent.com/okanerdemirr/Hedef-Paneli/main/veri"
 ]
 
-df = None
+uploaded_file = None
 for url in urls:
     try:
-        df = pd.read_excel(url)
+        # Kodun alt kısımlarındaki pd.ExcelFile ve pd.read_excel yapısını bozmamak için dosyayı indirip bağlıyoruz
+        uploaded_file = pd.ExcelFile(url)
         break
-    except:
-        continue
-
-if df is not None:
-    st.markdown('<div class="section-title">👤 Temsilci Filtreleme ve Durum</div>', unsafe_allow_html=True)
-    
-    # EN DEĞİŞEN YER: İsme bakmaksızın Excel'deki İLK sütunu Temsilci sütunu yapıyoruz
-    temsilci_sutunu = df.columns[0] 
-    
-    # Temsilci listesini çekiyoruz
-    temsilciler = ["Hepsi"] + sorted(df[temsilci_sutunu].dropna().unique().tolist())
-    secilen_temsilci = st.selectbox("İncelemek İstediğiniz Temsilciyi Seçin:", temsilciler)
-    
-    if secilen_temsilci != "Hepsi":
-        df_filtrelenmis = df[df[temsilci_sutunu] == secilen_temsilci]
-    else:
-        df_filtrelenmis = df
-
-    st.markdown('<div class="section-title">📈 Performans Grafikleri ve Veri Tablosu</div>', unsafe_allow_html=True)
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        st.markdown('<div class="card-title">Genel Dağılım Grafiği</div>', unsafe_allow_html=True)
-        # Grafik için X eksenine veri tiplerini (2. sütun), Y eksenine sayısal değerleri alıyoruz
-        if len(df_filtrelenmis.columns) >= 3:
-            fig = px.bar(df_filtrelenmis, x=df_filtrelenmis.columns[1], y=df_filtrelenmis.columns[2], template="plotly_dark")
-            st.plotly_chart(fig, use_container_width=True)
-            
-    with col2:
-        st.markdown('<div class="card-title">Detaylı Veri Listesi</div>', unsafe_allow_html=True)
-        st.dataframe(df_filtrelenmis, use_container_width=True)
-else:
-    st.error("GitHub üzerinde 'veri' veya 'veri.xlsx.xlsx' dosyası bulunamadı.")
