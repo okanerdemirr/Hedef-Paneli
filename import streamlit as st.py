@@ -84,5 +84,4 @@ def tr_lower(text):
     if not text:
         return ""
     text = str(text).strip()
-    mapping = {"İ": "i", "I": "ı", "Ş": "ş", "Ğ": "ğ", "Ü": "ü", "Ç": "ç"}
-    for k, v in mapping.items():
+    mapping = {"İ": "i", "
