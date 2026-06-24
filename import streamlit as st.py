@@ -31,7 +31,6 @@ st.markdown("""
 st.markdown('<div class="main-title">📊 Temsilci Performans Kontrol Paneli</div>', unsafe_allow_html=True)
 st.markdown('<div class="subtitle">Şirket genel hedefleri ve dinamik temsilci performans matrisi</div>', unsafe_allow_html=True)
 
-# GitHub'a yüklediğin olası iki dosya ismini de kontrol ediyoruz:
 urls = [
     "https://raw.githubusercontent.com/okanerdemirr/Hedef-Paneli/main/veri.xlsx.xlsx",
     "https://raw.githubusercontent.com/okanerdemirr/Hedef-Paneli/main/veri"
@@ -48,33 +47,26 @@ for url in urls:
 if df is not None:
     st.markdown('<div class="section-title">👤 Temsilci Filtreleme ve Durum</div>', unsafe_allow_html=True)
     
-    sutunlar = df.columns.tolist()
-    temsilci_sutunu = None
-    for col in sutunlar:
-        if 'temsilci' in str(col).lower() or 'ad' in str(col).lower():
-            temsilci_sutunu = col
-            break
-            
-    if temsilci_sutunu:
-        temsilciler = ["Hepsi"] + sorted(df[temsilci_sutunu].unique().tolist())
-        secilen_temsilci = st.selectbox("İncelemek İstediğiniz Temsilciyi Seçin:", temsilciler)
-        
-        # Hatalı satır düzeltildi:
-        if secilen_temsilci != "Hepsi":
-            df_filtrelenmis = df[df[temsilci_sutunu] == secilen_temsilci]
-        else:
-            df_filtrelenmis = df
+    # EN DEĞİŞEN YER: İsme bakmaksızın Excel'deki İLK sütunu Temsilci sütunu yapıyoruz
+    temsilci_sutunu = df.columns[0] 
+    
+    # Temsilci listesini çekiyoruz
+    temsilciler = ["Hepsi"] + sorted(df[temsilci_sutunu].dropna().unique().tolist())
+    secilen_temsilci = st.selectbox("İncelemek İstediğiniz Temsilciyi Seçin:", temsilciler)
+    
+    if secilen_temsilci != "Hepsi":
+        df_filtrelenmis = df[df[temsilci_sutunu] == secilen_temsilci]
     else:
         df_filtrelenmis = df
-        st.info("Filtreleme sütunu otomatik algılanamadı, tüm veriler listeleniyor.")
 
     st.markdown('<div class="section-title">📈 Performans Grafikleri ve Veri Tablosu</div>', unsafe_allow_html=True)
     col1, col2 = st.columns(2)
     
     with col1:
         st.markdown('<div class="card-title">Genel Dağılım Grafiği</div>', unsafe_allow_html=True)
-        if len(df_filtrelenmis.columns) >= 2:
-            fig = px.bar(df_filtrelenmis, x=df_filtrelenmis.columns[0], y=df_filtrelenmis.columns[1], template="plotly_dark")
+        # Grafik için X eksenine veri tiplerini (2. sütun), Y eksenine sayısal değerleri alıyoruz
+        if len(df_filtrelenmis.columns) >= 3:
+            fig = px.bar(df_filtrelenmis, x=df_filtrelenmis.columns[1], y=df_filtrelenmis.columns[2], template="plotly_dark")
             st.plotly_chart(fig, use_container_width=True)
             
     with col2:
