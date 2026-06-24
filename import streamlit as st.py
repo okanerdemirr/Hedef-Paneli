@@ -41,7 +41,6 @@ st.markdown('<div class="subtitle">Şirket genel hedefleri ve dinamik temsilci p
 # --- SIDEBAR CONTROL PANEL ---
 st.sidebar.markdown("### ⚙️ Veri Kontrol Paneli")
 
-# YUKARIDAN FILE_UPLOADER KALDIRILDI, SADECE ARAMA FİLTRESİ VE TEMİZLEME BUTONU KALDI
 arama_filtresi = st.sidebar.text_input("👤 Temsilci Ara (Dinamik)", "").strip().lower()
 
 if st.sidebar.button("🔄 Verileri Yenile / Sıfırla"):
@@ -81,20 +80,4 @@ def tr_lower(text):
     if not text:
         return ""
     text = str(text).strip()
-    mapping = {"İ": "i", "I": "ı", "Ş": "ş", "Ğ": "ğ", "Ü": "ü", "Ç": "ç"}
-    for k, v in mapping.items():
-        text = text.replace(k, v)
-    return text.lower()
-
-# --- OTOMATİK ARKA PLAN DOSYA MOTORU ---
-urls = [
-    "https://raw.githubusercontent.com/okanerdemirr/Hedef-Paneli/main/veri.xlsx.xlsx",
-    "https://raw.githubusercontent.com/okanerdemirr/Hedef-Paneli/main/veri"
-]
-
-uploaded_file = None
-for url in urls:
-    try:
-        # Kodun alt kısımlarındaki pd.ExcelFile ve pd.read_excel yapısını bozmamak için dosyayı indirip bağlıyoruz
-        uploaded_file = pd.ExcelFile(url)
-        break
+    mapping = {"İ": "i
