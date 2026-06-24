@@ -84,4 +84,5 @@ def tr_lower(text):
     if not text:
         return ""
     text = str(text).strip()
-    mapping = {"İ": "i", "
+    # Satır kırılmalarını önlemek için kompakt şekilde tanımlandı
+    for k, v in {"İ":"i", "I":"ı", "Ş":"ş", "Ğ":"ğ", "Ü":"ü", "Ç
