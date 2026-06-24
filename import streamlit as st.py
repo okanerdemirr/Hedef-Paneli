@@ -2,6 +2,8 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 
+# requirements: streamlit, pandas, plotly, openpyxl
+
 st.set_page_config(
     page_title="Pano", 
     layout="wide"
@@ -39,13 +41,12 @@ st.markdown('<div class="subtitle">Şirket genel hedefleri ve dinamik temsilci p
 # --- SIDEBAR CONTROL PANEL ---
 st.sidebar.markdown("### ⚙️ Veri Kontrol Paneli")
 
-uploaded_file = st.sidebar.file_uploader("Excel dosyasını yükleyin", type=["xlsx"], key="dashboard_xlsx_uploader")
+# DOSYA YÜKLEME BUTONU BURADAN KALDIRILDI! Temsilciler sadece arama yapabilecek.
 arama_filtresi = st.sidebar.text_input("👤 Temsilci Ara (Dinamik)", "").strip().lower()
 
-if uploaded_file is not None:
-    if st.sidebar.button("🔄 Verileri Temizle / Sıfırla"):
-        st.cache_data.clear()
-        st.rerun()
+if st.sidebar.button("🔄 Verileri Yenile / Sıfırla"):
+    st.cache_data.clear()
+    st.rerun()
 
 def clean_val(val):
     if pd.isna(val): 
@@ -85,10 +86,25 @@ def tr_lower(text):
         text = text.replace(k, v)
     return text.lower()
 
-# --- MAIN ENGINE ---
+# --- OTOMATİK ARKA PLAN DOSYA MOTORU ---
+urls = [
+    "https://raw.githubusercontent.com/okanerdemirr/Hedef-Paneli/main/veri.xlsx.xlsx",
+    "https://raw.githubusercontent.com/okanerdemirr/Hedef-Paneli/main/veri"
+]
+
+uploaded_file = None
+for url in urls:
+    try:
+        # Kodun orijinal akışındaki pd.ExcelFile mantığını korumak için linki doğrudan bağlıyoruz
+        uploaded_file = pd.ExcelFile(url)
+        if uploaded_file is not None:
+            break
+    except:
+        continue
+
+# --- MAIN ENGINE (ORİJİNAL HESAPLAMA MOTORUNUZ AYNEN BURADA) ---
 if uploaded_file is not None:
-    xl = pd.ExcelFile(uploaded_file)
-    all_sheets = xl.sheet_names
+    all_sheets = uploaded_file.sheet_names
 
     kpi_toplamlar = {
         "Lead": {"hedef": 0, "gerceklesen": 0, "oran_val": 0},
@@ -149,7 +165,6 @@ if uploaded_file is not None:
     st.markdown('<hr style="border-top: 1px solid #334155; margin-top:30px; margin-bottom:20px;">', unsafe_allow_html=True)
     st.markdown('<div class="section-title">👥 Temsilci Performans Kırılımları</div>', unsafe_allow_html=True)
 
-    # Akıllı Sekme Tarayıcı: Hedef, Veri Analiz ve Ulaşım Oranı sayfalarını dinamik listeler
     hedef_sayfalari = [s for s in all_sheets if ("hedef" in s.lower() or "analiz" in s.lower() or "ulasim" in s.lower() or "ulaşım" in s.lower()) and "genel" not in s.lower()]
     
     for sheet in hedef_sayfalari:
@@ -238,4 +253,4 @@ if uploaded_file is not None:
                 st.plotly_chart(fig, width="stretch", use_container_width=True)
             st.markdown("<br><br>", unsafe_allow_html=True)
 else:
-    st.info("👋 Hoş geldiniz! Başlamak için sol menüden yeni Excel dosyanızı yükleyin.")
+    st.error("❌ GitHub deposunda 'veri' veya 'veri.xlsx.xlsx' dosyası otomatik okunamadı.")
