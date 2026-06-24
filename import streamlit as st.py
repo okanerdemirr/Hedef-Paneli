@@ -32,7 +32,6 @@ st.markdown("""
             border-radius: 6px !important;
             font-weight: 600 !important;
         }
-        /* Sekme başlıklarının temasını güzelleştiriyoruz */
         button[data-baseweb="tab"] {
             font-size: 16px !important;
             font-weight: 600 !important;
@@ -49,7 +48,6 @@ st.markdown('<div class="subtitle">Şirket genel hedefleri ve dinamik temsilci p
 
 # --- SIDEBAR CONTROL PANEL ---
 st.sidebar.markdown("### ⚙️ Veri Kontrol Paneli")
-
 arama_filtresi = st.sidebar.text_input("👤 Temsilci Ara (Dinamik)", "").strip().lower()
 
 if st.sidebar.button("🔄 Verileri Yenile / Sıfırla"):
@@ -81,18 +79,4 @@ def format_val(val, col_name):
             return f"{val:.1f}%"
     if isinstance(val, (int, float)):
         if val == int(val):
-            return f"{int(val):,}"
-        return f"{val:,.2f}"
-    return str(val)
-
-def tr_lower(text):
-    if not text:
-        return ""
-    text = str(text).strip()
-    mapping = {"İ": "i", "I": "ı", "Ş": "ş", "Ğ": "ğ", "Ü": "ü", "Ç": "ç"}
-    for k, v in mapping.items():
-        text = text.replace(k, v)
-    return text.lower()
-
-# --- OTOMATİK ARKA PLAN DOSYA MOTORU ---
-urls =
+            return f"{int(val):,
