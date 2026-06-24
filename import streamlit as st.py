@@ -79,21 +79,3 @@ def format_val(val, col_name):
             return "{:,}".format(int(val))
         return "{:,.2f}".format(val)
     return str(val)
-
-def tr_lower(text):
-    if not text:
-        return ""
-    text = str(text).strip()
-    
-    # Kırılgan sözlük yapısı yerine düz, güvenli replace zincirine geçtik:
-    text = text.replace("İ", "i").replace("I", "ı").replace("Ş", "ş").replace("Ğ", "ğ").replace("Ü", "ü").replace("Ç", "ç")
-    
-    return text.lower()
-
-# --- HİBRİT VERİ MOTORU (GitHub + Manuel Yükleme) ---
-uploaded_file = None
-
-github_urls = [
-    "https://raw.githubusercontent.com/okanerdemirr/Hedef-Paneli/main/veri.xlsx.xlsx",
-    "https://raw.githubusercontent.com/okanerdemirr/Hedef-Paneli/main/veri.xlsx",
-    "
