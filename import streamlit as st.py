@@ -66,5 +66,34 @@ def clean_val(val):
             return float(v_str.replace('%', '').replace(',', '.')) / 100
         except: 
             return 0
-    try: 
-        return float(v_str.replace(',', '.')) if '.' in v_
+    try:
+        # Bölünmeye sebep olan tek satırlık yapı güvenli alt alta bloklara çevrildi:
+        if '.' in v_str or ',' in v_str:
+            return float(v_str.replace(',', '.'))
+        else:
+            return int(v_str)
+    except: 
+        return 0
+
+def format_val(val, col_name):
+    c_lower = str(col_name).lower()
+    if 'oran' in c_lower or '%' in c_lower or 'başarı' in c_lower:
+        if val <= 1:
+            return "{:.1%}".format(val)
+        else:
+            return "{:.1f}%".format(val)
+    if isinstance(val, (int, float)):
+        if val == int(val):
+            return "{:,}".format(int(val))
+        return "{:,.2f}".format(val)
+    return str(val)
+
+def tr_lower(text):
+    if not text:
+        return ""
+    text = str(text).strip()
+    text = text.replace("İ", "i").replace("I", "ı").replace("Ş", "ş").replace("Ğ", "ğ").replace("Ü", "ü").replace("Ç", "ç")
+    return text.lower()
+
+# --- OTOMATİK ARKA PLAN DOSYA MOTORU ---
+urls =
