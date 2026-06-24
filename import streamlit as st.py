@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 
-# requirements: streamlit, pandas, plotly, openpyxl
+# gereksinimler: streamlit, pandas, plotly, openpyxl
 
 st.set_page_config(
     page_title="Temsilci Performans Paneli", 
@@ -51,3 +51,38 @@ st.sidebar.markdown("### ⚙️ Veri Kontrol Paneli")
 arama_filtresi = st.sidebar.text_input("👤 Temsilci Ara (Dinamik)", "").strip().lower()
 
 # --- YARDIMCI KONTROL FONKSİYONLARI ---
+def clean_val(val):
+    if pd.isna(val): 
+        return 0
+    v_str = str(val).strip()
+    if v_str in ['None', 'nan', '-', '']: 
+        return 0
+    if '%' in v_str:
+        try: 
+            return float(v_str.replace('%', '').replace(',', '.')) / 100
+        except: 
+            return 0
+    try: 
+        return float(v_str.replace(',', '.')) if '.' in v_str or ',' in v_str else int(v_str)
+    except: 
+        return 0
+
+def format_val(val, col_name):
+    c_lower = str(col_name).lower()
+    if 'oran' in c_lower or '%' in c_lower or 'başarı' in c_lower:
+        if val <= 1:
+            return "{:.1%}".format(val)
+        else:
+            return "{:.1f}%".format(val)
+    if isinstance(val, (int, float)):
+        if val == int(val):
+            return "{:,}".format(int(val))
+        return "{:,.2f}".format(val)
+    return str(val)
+
+def tr_lower(text):
+    if not text:
+        return ""
+    text = str(text).strip()
+    mapping = {"İ": "i", "I": "ı", "Ş": "ş", "Ğ": "ğ", "Ü": "ü", "Ç": "ç"}
+    for k, v in mapping.items():
