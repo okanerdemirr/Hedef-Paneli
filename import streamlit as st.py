@@ -56,75 +56,53 @@ if st.sidebar.button("🔄 Verileri Yenile / Sıfırla"):
     st.rerun()
 
 def clean_val(val):
-    if pd.isna(val): 
-        return 0
+    if pd.isna(val): return 0
     v_str = str(val).strip()
-    if v_str in ['None', 'nan', '-', '']: 
-        return 0
+    if v_str in ['None', 'nan', '-', '']: return 0
     if '%' in v_str:
-        try: 
-            return float(v_str.replace('%', '').replace(',', '.')) / 100
-        except: 
-            return 0
+        try: return float(v_str.replace('%', '').replace(',', '.')) / 100
+        except: return 0
     try:
-        if '.' in v_str or ',' in v_str:
-            return float(v_str.replace(',', '.'))
-        else:
-            return int(v_str)
-    except: 
-        return 0
+        if '.' in v_str or ',' in v_str: return float(v_str.replace(',', '.'))
+        else: return int(v_str)
+    except: return 0
 
 def format_val(val, col_name, is_gelme_orani=False):
     c_lower = str(col_name).lower()
     if 'oran' in c_lower or '%' in c_lower or 'başarı' in c_lower:
         if is_gelme_orani:
-            # Gelme oranı verisi zaten 39.7, 50.7 gibi formatta olduğu için doğrudan yüzdeye eklenmeli
             v_show = val if val > 5.0 else val * 100.0
             return "{:.1f}%".format(v_show)
         else:
             v_show = val if val <= 5.0 else val / 100.0
             return "{:.1%}".format(v_show)
     if isinstance(val, (int, float)):
-        if val == int(val):
-            return "{:,}".format(int(val))
+        if val == int(val): return "{:,}".format(int(val))
         return "{:,.2f}".format(val)
     return str(val)
 
 def tr_lower(text):
-    if not text:
-        return ""
+    if not text: return ""
     text = str(text).strip()
     text = text.replace("İ", "i").replace("I", "ı").replace("Ş", "ş").replace("Ğ", "ğ").replace("Ü", "ü").replace("Ç", "ç")
     return text.lower()
 
-# Tablo hücrelerini kurallara göre renklendiren dinamik fonksiyon
 def dinamik_renk_kurali(val, is_gelme_orani=False):
     try:
-        if isinstance(val, str) and '%' in val:
-            v = float(val.replace('%', '').replace(',', '.')) / 100
+        if isinstance(val, str) and '%' in val: v = float(val.replace('%', '').replace(',', '.')) / 100
         else:
             v = float(val)
-            if not is_gelme_orani and v > 5.0:
-                v = v / 100.0
-            elif is_gelme_orani and v > 5.0:
-                v = v / 100.0
+            if not is_gelme_orani and v > 5.0: v = v / 100.0
+            elif is_gelme_orani and v > 5.0: v = v / 100.0
         
         if is_gelme_orani:
-            # Gelme Oranı için tam istediğin kural: %40 ve üzeri Yeşil, %39.9 ve altı Kırmızı
-            if v >= 0.40:
-                return 'color: #10b981; font-weight: bold;'
-            else:
-                return 'color: #ef4444; font-weight: bold;'
+            if v >= 0.40: return 'color: #10b981; font-weight: bold;'
+            else: return 'color: #ef4444; font-weight: bold;'
         else:
-            # Diğer standart sekmelerin kuralı
-            if v >= 1.0:
-                return 'color: #10b981; font-weight: bold;'
-            elif v >= 0.8:
-                return 'color: #fbbf24; font-weight: bold;'
-            else:
-                return 'color: #ef4444; font-weight: bold;'
-    except:
-        return ''
+            if v >= 1.0: return 'color: #10b981; font-weight: bold;'
+            elif v >= 0.8: return 'color: #fbbf24; font-weight: bold;'
+            else: return 'color: #ef4444; font-weight: bold;'
+    except: return ''
 
 # --- OTOMATİK ARKA PLAN DOSYA MOTORU ---
 uploaded_file = None
@@ -140,8 +118,7 @@ for url in kaynak_baglantilar:
         if f_excel is not None:
             uploaded_file = f_excel
             break
-    except:
-        continue
+    except: continue
 
 # --- MAIN ENGINE ---
 if uploaded_file is not None:
@@ -159,8 +136,7 @@ if uploaded_file is not None:
         df_g = pd.read_excel(uploaded_file, sheet_name="Genel Hedef", header=None)
         for r in range(len(df_g)):
             h_adi = tr_lower(df_g.iloc[r, 0]).replace('\n', ' ')
-            if not h_adi or h_adi == 'nan': 
-                continue
+            if not h_adi or h_adi == 'nan': continue
             
             v1 = clean_val(df_g.iloc[r, 1])
             v2 = clean_val(df_g.iloc[r, 2])
@@ -169,19 +145,13 @@ if uploaded_file is not None:
             oran_val = v3 if v3 > 0 else (v2 / v1 if v1 > 0 else 0)
             is_kpi = any(x in h_adi for x in ["lead", "rezervasyon", "hedef"])
             
-            if oran_val > 1 and not is_kpi:
-                oran_val = oran_val / 100
+            if oran_val > 1 and not is_kpi: oran_val = oran_val / 100
 
-            if "lead" in h_adi:
-                kpi_toplamlar["Lead"] = {"hedef": v1, "gerceklesen": v2, "oran_val": oran_val}
-            elif "gelen" in h_adi and "rezerv" in h_adi:
-                kpi_toplamlar["Gelen Rezervasyon"] = {"hedef": v1, "gerceklesen": v2, "oran_val": oran_val}
-            elif "sat" in h_adi:
-                kpi_toplamlar["Satış"] = {"hedef": v1, "gerceklesen": v2, "oran_val": oran_val}
-            elif "kriter" in h_adi:
-                kpi_toplamlar["Kriter Dışı"] = {"hedef": v1 if v1 <= 1 else v1/100, "gerceklesen": v2 / 100 if v2 > 1 else v2, "oran_val": v2/100 if v2 > 1 else v2}
-            elif "gelme" in h_adi:
-                kpi_toplamlar["Gelme Oranı"] = {"hedef": v1 if v1 <= 1 else v1/100, "gerceklesen": v2 / 100 if v2 > 1 else v2, "oran_val": v2/100 if v2 > 1 else v2}
+            if "lead" in h_adi: kpi_toplamlar["Lead"] = {"hedef": v1, "gerceklesen": v2, "oran_val": oran_val}
+            elif "gelen" in h_adi and "rezerv" in h_adi: kpi_toplamlar["Gelen Rezervasyon"] = {"hedef": v1, "gerceklesen": v2, "oran_val": oran_val}
+            elif "sat" in h_adi: kpi_toplamlar["Satış"] = {"hedef": v1, "gerceklesen": v2, "oran_val": oran_val}
+            elif "kriter" in h_adi: kpi_toplamlar["Kriter Dışı"] = {"hedef": v1 if v1 <= 1 else v1/100, "gerceklesen": v2 / 100 if v2 > 1 else v2, "oran_val": v2/100 if v2 > 1 else v2}
+            elif "gelme" in h_adi: kpi_toplamlar["Gelme Oranı"] = {"hedef": v1 if v1 <= 1 else v1/100, "gerceklesen": v2 / 100 if v2 > 1 else v2, "oran_val": v2/100 if v2 > 1 else v2}
 
     st.markdown('<div class="section-title">⚡ Şirket Genel Performans Matrisi</div>', unsafe_allow_html=True)
     ana_kpi_sirasi = ["Lead", "Gelen Rezervasyon", "Satış", "Kriter Dışı", "Gelme Oranı"]
@@ -217,8 +187,7 @@ if uploaded_file is not None:
         for idx, sheet in enumerate(hedef_sayfalari):
             with sekmeler[idx]:
                 df_sheet = pd.read_excel(uploaded_file, sheet_name=sheet, header=None)
-                if len(df_sheet) == 0:
-                    continue
+                if len(df_sheet) == 0: continue
                     
                 tablo_basligi = sekme_isimleri[idx]
                 is_gelme_orani_page = "gelme" in sheet.lower()
@@ -233,8 +202,7 @@ if uploaded_file is not None:
                     t_isim = str(df_sheet.iloc[r, 0]).strip()
                     t_isim_lower = tr_lower(t_isim)
                     
-                    if not t_isim or t_isim == '' or t_isim_lower == 'nan':
-                        continue
+                    if not t_isim or t_isim == '' or t_isim_lower == 'nan': continue
                         
                     row_data = {}
                     row_data[sutun_isimleri[0]] = t_isim
@@ -248,15 +216,12 @@ if uploaded_file is not None:
                         row_data[sutun_isimleri[0]] = '🔴 Genel Toplam'
                         formatted_toplam = {}
                         for k, v in row_data.items():
-                            if k == sutun_isimleri[0]:
-                                formatted_toplam[k] = v
-                            else:
-                                formatted_toplam[k] = format_val(v, k, is_gelme_orani_page)
+                            if k == sutun_isimleri[0]: formatted_toplam[k] = v
+                            else: formatted_toplam[k] = format_val(v, k, is_gelme_orani_page)
                         toplam_satir_data = formatted_toplam
                         continue
                     
-                    if arama_filtresi == "" or arama_filtresi in t_isim_lower:
-                        kpi_tablo_rows.append(row_data)
+                    if arama_filtresi == "" or arama_filtresi in t_isim_lower: kpi_tablo_rows.append(row_data)
                 
                 grafik_df = pd.DataFrame(kpi_tablo_rows).copy()
                 
@@ -264,14 +229,11 @@ if uploaded_file is not None:
                 for row in kpi_tablo_rows:
                     f_row = {}
                     for k, v in row.items():
-                        if k == sutun_isimleri[0]:
-                            f_row[k] = v
-                        else:
-                            f_row[k] = format_val(v, k, is_gelme_orani_page)
+                        if k == sutun_isimleri[0]: f_row[k] = v
+                        else: f_row[k] = format_val(v, k, is_gelme_orani_page)
                     formatted_rows.append(f_row)
                     
-                if toplam_satir_data and arama_filtresi == "":
-                    formatted_rows.append(toplam_satir_data)
+                if toplam_satir_data and arama_filtresi == "": formatted_rows.append(toplam_satir_data)
                     
                 if len(formatted_rows) > 0 and not (len(formatted_rows) == 1 and formatted_rows[0][sutun_isimleri[0]] == '🔴 Genel Toplam'):
                     st.markdown("#### 📁 {} Veri Seti".format(tablo_basligi))
@@ -288,40 +250,4 @@ if uploaded_file is not None:
                     y_ekseni = sutun_isimleri[1:-1] if ('oran' in sutun_isimleri[-1].lower() or '%' in sutun_isimleri[-1].lower()) else sutun_isimleri[1:]
                     
                     if not grafik_df.empty and len(y_ekseni) > 0:
-                        # Grafik barlarının renk lejantı ve mantığı %40'a göre tamamen senkronize edildi
-                        if is_gelme_orani_page:
-                            grafik_df['Grafik_Renk'] = grafik_df[sutun_isimleri[-1]].apply(
-                                lambda x: 'Başarılı (>=%40)' if (x >= 0.40 or x >= 40.0) else 'Yetersiz (<%40)'
-                            )
-                            color_map = {'Başarılı (>=%40)': '#10b981', 'Yetersiz (<%40)': '#ef4444'}
-                        else:
-                            grafik_df['Grafik_Renk'] = grafik_df[sutun_isimleri[-1]].apply(
-                                lambda x: 'Yüksek (>=%100)' if (x >= 1.0 or (x > 5.0 and x >= 100.0)) else ('Orta (%80-%99)' if (x >= 0.8 or (x > 5.0 and x >= 80.0)) else 'Düşük (<%80)')
-                            )
-                            color_map = {'Yüksek (>=%100)': '#10b981', 'Orta (%80-%99)': '#fbbf24', 'Düşük (<%80)': '#ef4444'}
-                        
-                        fig = px.bar(
-                            grafik_df, 
-                            x=sutun_isimleri[0], 
-                            y=y_ekseni, 
-                            barmode='group', 
-                            template="plotly_dark", 
-                            height=300,
-                            color='Grafik_Renk',
-                            color_discrete_map=color_map
-                        )
-                        
-                        fig.update_layout(
-                            margin=dict(l=20, r=20, t=20, b=20),
-                            legend_title_text='Performans Durumu',
-                            paper_bgcolor='rgba(0,0,0,0)',
-                            plot_bgcolor='rgba(0,0,0,0)'
-                        )
-                        
-                        st.plotly_chart(fig, width="stretch", use_container_width=True)
-    else:
-        st.info("ℹ️ Temsilci hedeflerine ait detaylı alt sayfalar bulunamadı.")
-else:
-    st.markdown("---")
-    st.warning("⚠️ **GitHub Deponuzdaki Excel Dosyası Okunamadı!**")
-    st.info("💡 **Çözüm:** Bilgisayarınızdaki güncel Excel dosyasının adını küçük harflerle tamamen **`veri.xlsx`** yapın ve GitHub'a yükleyin. Sistem dosyayı algıladığı an paneliniz anında açılacaktır.")
+                        # 🔴 GRAFİK EŞİK KONTROLÜ VE RENKLENDİRME YAPISI TAMAMEN SENKRONİZE EDİLD
