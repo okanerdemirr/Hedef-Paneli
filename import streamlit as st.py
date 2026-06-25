@@ -84,31 +84,4 @@ def tr_lower(text):
     text = text.replace("İ", "i").replace("I", "ı").replace("Ş", "ş").replace("Ğ", "ğ").replace("Ü", "ü").replace("Ç", "ç")
     return text.lower()
 
-def dinamik_renk_kurali_hibrit(val, page_type="standart"):
-    try:
-        if isinstance(val, str) and '%' in val:
-            v = float(val.replace('%', '').replace(',', '.')) / 100
-        else:
-            v = float(val)
-            if v > 5.0: v = v / 100.0
-        
-        if page_type == "verimlilik":
-            if v >= 0.80: return 'color: #10b981; font-weight: bold;'
-            return 'color: #ef4444; font-weight: bold;'
-        elif page_type == "ulasim":
-            if v >= 0.70: return 'color: #10b981; font-weight: bold;'
-            return 'color: #ef4444; font-weight: bold;'
-        elif page_type == "kriter":
-            if v <= 0.20: return 'color: #10b981; font-weight: bold;'
-            return 'color: #ef4444; font-weight: bold;'
-        elif page_type == "gelme":
-            if v >= 0.40: return 'color: #10b981; font-weight: bold;'
-            return 'color: #ef4444; font-weight: bold;'
-        else:
-            if v >= 1.0: return 'color: #10b981; font-weight: bold;'
-            if v >= 0.8: return 'color: #fbbf24; font-weight: bold;'
-            return 'color: #ef4444; font-weight: bold;'
-    except: return ''
-
-uploaded_file = None
-kaynak_baglantilar =
+def dinamik_renk_kurali_hibrit(val, page_type="standart
