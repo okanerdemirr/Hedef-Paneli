@@ -70,7 +70,6 @@ def format_val(val, col_name, is_gelme_orani=False, is_kriter_disi=False):
             v_show = val if val > 5.0 else val * 100.0
             return "{:.1f}%".format(v_show)
         elif is_kriter_disi:
-            # Lokman Tan'ın hücresindeki gibi küsuratlı küçük sayı kaymalarını engelleme motoru
             v_show = val if val > 5.0 else val * 100.0
             if v_show > 500.0: v_show = v_show / 100.0
             return "{:.1f}%".format(v_show)
