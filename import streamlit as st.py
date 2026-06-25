@@ -57,21 +57,22 @@ def clean_val(val, is_ozel_sayfa=False):
     if v_str in ['None', 'nan', '-', '']: return 0
     if '%' in v_str:
         v_str = v_str.replace('%', '').replace(',', '.')
-        try: return float(v_str) / 100
+        try: return float(v_str) / 100.0
         except: return 0
     try:
         if '.' in v_str or ',' in v_str:
             res = float(v_str.replace(',', '.'))
-            if is_ozel_sayfa and 0 < res < 100: return res / 100.0
+            if is_ozel_sayfa and 1.0 < res < 100.0: return res / 100.0
             return res
         num = int(v_str)
-        if is_ozel_sayfa and 0 < num < 100: return num / 100.0
+        if is_ozel_sayfa and 1.0 < num < 100.0: return num / 100.0
         return num
     except: return 0
 
 def format_val(val, col_name):
     c_lower = str(col_name).lower()
-    if 'oran' in c_lower or '%' in c_lower or 'başarı' in c_lower or 'verimlilik' in c_lower:
+    # Excel'deki "Ortalama" sütununu da otomatik algılaması için kural genişletildi
+    if 'oran' in c_lower or '%' in c_lower or 'başarı' in c_lower or 'verimlilik' in c_lower or 'ortalama' in c_lower:
         return "{:.1%}".format(val)
     if isinstance(val, (int, float)):
         if val == int(val): return "{:,}".format(int(val))
@@ -88,10 +89,10 @@ def tr_lower(text):
 def dinamik_renk_kurali_hibrit(val, page_type="std"):
     try:
         if isinstance(val, str) and '%' in val:
-            v = float(val.replace('%', '').replace(',', '.')) / 100
+            v = float(val.replace('%', '').replace(',', '.')) / 100.0
         else:
             v = float(val)
-            if v > 5.0: v = v / 100.0
+            if v > 1.0: v = v / 100.0
         
         if page_type == "verimlilik":
             if v >= 0.80: return 'color: #10b981; font-weight: bold;'
@@ -253,7 +254,7 @@ if uploaded_file is not None:
                     except:
                         st.dataframe(kpi_tablo_df, width="stretch", hide_index=True)
                     
-                    y_ekseni = sutun_isimleri[1:-1] if ('oran' in sutun_isimleri[-1].lower() or '%' in sutun_isimleri[-1].lower() or 'verimlilik' in sutun_isimleri[-1].lower()) else sutun_isimleri[1:]
+                    y_ekseni = sutun_isimleri[1:-1] if ('oran' in sutun_isimleri[-1].lower() or '%' in sutun_isimleri[-1].lower() or 'verimlilik' in sutun_isimleri[-1].lower() or 'ortalama' in sutun_isimleri[-1].lower()) else sutun_isimleri[1:]
                     
                     if not grafik_df.empty and len(y_ekseni) > 0:
                         if page_type == "verimlilik":
@@ -266,8 +267,8 @@ if uploaded_file is not None:
                             grafik_df['Grafik_Renk'] = grafik_df[oran_sutunu].apply(lambda x: 'Başarılı (>=%40)' if (x >= 0.40 or x >= 40.0) else 'Yetersiz (<%40)')
                             color_map = {'Başarılı (>=%40)': '#10b981', 'Yetersiz (<%40)': '#ef4444'}
                         else:
-                            grafik_df['Grafik_Renk'] = grafik_df[oran_sutunu].apply(lambda x: 'Yüksek (>=%100)' if (x >= 1.0 or x >= 100.0) else ('Orta (%80-%99)' if (x >= 0.8 or x >= 80.0) else 'Düşük (<%80)'))
-                            color_map = {'Yüksek (>=%100)': '#10b981', 'Orta (%80-%99)' : '#fbbf24', 'Düşük (<%80)': '#ef4444'}
+                            grafik_df['Grafik_Renk'] = grafik_df[oran_sutunu].apply(lambda x: 'Başarılı (>=%80)' if (x >= 0.80 or x >= 80.0) else 'Yetersiz (<%80)')
+                            color_map = {'Başarılı (>=%80)': '#10b981', 'Yetersiz (<%80)': '#ef4444'}
                         
                         fig = px.bar(
                             grafik_df, 
