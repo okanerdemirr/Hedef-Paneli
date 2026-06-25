@@ -64,44 +64,13 @@ def clean_val(val, is_ozel_sayfa=False):
     try:
         if ',' in v_str:
             v_str = v_str.replace(',', '.')
-            
         res = float(v_str)
-        
-        # Excel'den "84" gibi metin formatında gelirse orana çevirme standardı
         if is_ozel_sayfa and res > 1.0:
             return res / 100.0
-            
         return res
     except:
         return 0
 
 def format_val(val, col_name):
     c_lower = str(col_name).lower()
-    if 'oran' in c_lower or '%' in c_lower or 'başarı' in c_lower or 'verimlilik' in c_lower:
-        return "{:.1%}".format(val)
-    if isinstance(val, (int, float)):
-        if val == int(val): return "{:,}".format(int(val))
-        return "{:,.2f}".format(val)
-    return str(val)
-
-def tr_lower(text):
-    if not text: return ""
-    text = str(text).strip()
-    text = text.replace("İ", "i").replace("I", "ı").replace("Ş", "ş").replace("Ğ", "ğ").replace("Ü", "ü").replace("Ç", "ç")
-    return text.lower()
-
-# Dinamik Renklendirme Motoru
-def dinamik_renk_kurali_hibrit(val, page_type="std"):
-    try:
-        if isinstance(val, str) and '%' in val:
-            v = float(val.replace('%', '').replace(',', '.')) / 100.0
-        else:
-            v = float(val)
-            if v > 1.0: v = v / 100.0
-        
-        # Verimlilik sayfası kuralı: %80 ve üzeri Yeşil, altı Kırmızı
-        if page_type == "verimlilik":
-            if v >= 0.80: return 'color: #10b981; font-weight: bold;'
-            return 'color: #ef4444; font-weight: bold;'
-            
-        # Kriter dışı sayfası kuralı
+    if 'oran' in c_lower or '%' in c_lower or 'başarı' in c_lower or 'verimlilik' in c_
