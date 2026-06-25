@@ -5,11 +5,11 @@ import plotly.express as px
 # requirements: streamlit, pandas, plotly, openpyxl
 
 st.set_page_config(
-    page_title="Pano", 
+    page_title="Temsilci Performans Paneli", 
     layout="wide"
 )
 
-# Premium modern tema CSS kodları
+# Premium modern tema CSS kodları ve PERFORMANS RENKLERİ entegrasyonu
 st.markdown("""
     <style>
         .main-title { font-size: 34px !important; font-weight: 800 !important; color: #ffffff; margin-bottom: 2px; letter-spacing: -0.5px; }
@@ -41,6 +41,10 @@ st.markdown("""
             color: #38bdf8 !important;
             border-bottom-color: #38bdf8 !important;
         }
+        /* PERFORMANS RENKLENDİRME CSS SINIFLARI */
+        .color-green { color: #10b981 !important; font-weight: 700 !important; } /* >= %100 */
+        .color-yellow { color: #fbbf24 !important; font-weight: 700 !important; } /* %80-%99 */
+        .color-red { color: #ef4444 !important; font-weight: 700 !important; } /* <= %79 */
     </style>
 """, unsafe_allow_html=True)
 
@@ -64,71 +68,3 @@ def clean_val(val):
     if '%' in v_str:
         try: 
             return float(v_str.replace('%', '').replace(',', '.')) / 100
-        except: 
-            return 0
-    try:
-        if '.' in v_str or ',' in v_str:
-            return float(v_str.replace(',', '.'))
-        else:
-            return int(v_str)
-    except: 
-        return 0
-
-def format_val(val, col_name):
-    c_lower = str(col_name).lower()
-    if 'oran' in c_lower or '%' in c_lower or 'başarı' in c_lower:
-        if val <= 1:
-            return "{:.1%}".format(val)
-        else:
-            return "{:.1f}%".format(val)
-    if isinstance(val, (int, float)):
-        if val == int(val):
-            return "{:,}".format(int(val))
-        return "{:,.2f}".format(val)
-    return str(val)
-
-def tr_lower(text):
-    if not text:
-        return ""
-    text = str(text).strip()
-    text = text.replace("İ", "i").replace("I", "ı").replace("Ş", "ş").replace("Ğ", "ğ").replace("Ü", "ü").replace("Ç", "ç")
-    return text.lower()
-
-# --- OTOMATİK ARKA PLAN DOSYA MOTORU ---
-uploaded_file = None
-kaynak_baglantilar = [
-    "https://raw.githubusercontent.com/okanerdemirr/Hedef-Paneli/main/veri.xlsx.xlsx",
-    "https://raw.githubusercontent.com/okanerdemirr/Hedef-Paneli/main/veri.xlsx",
-    "https://raw.githubusercontent.com/okanerdemirr/Hedef-Paneli/main/veri"
-]
-
-for url in kaynak_baglantilar:
-    try:
-        uploaded_file = pd.ExcelFile(url)
-        if uploaded_file is not None:
-            break
-    except:
-        continue
-
-# --- MAIN ENGINE ---
-if uploaded_file is not None:
-    all_sheets = uploaded_file.sheet_names
-
-    kpi_toplamlar = {
-        "Lead": {"hedef": 0, "gerceklesen": 0, "oran_val": 0},
-        "Gelen Rezervasyon": {"hedef": 0, "gerceklesen": 0, "oran_val": 0},
-        "Satış": {"hedef": 0, "gerceklesen": 0, "oran_val": 0},
-        "Kriter Dışı": {"hedef": 0, "gerceklesen": 0, "oran_val": 0},
-        "Gelme Oranı": {"hedef": 0, "gerceklesen": 0, "oran_val": 0}
-    }
-    
-    if "Genel Hedef" in all_sheets:
-        df_g = pd.read_excel(uploaded_file, sheet_name="Genel Hedef", header=None)
-        for r in range(len(df_g)):
-            h_adi = tr_lower(df_g.iloc[r, 0]).replace('\n', ' ')
-            if not h_adi or h_adi == 'nan': 
-                continue
-            
-            v1 = clean_val(df_g.iloc[r, 1])
-            v2 = clean_val(df_g.iloc[r, 2])
-            v3 = clean_val(df_g.iloc[r, 3]) if df_g.shape[1]
