@@ -4,7 +4,10 @@ import plotly.express as px
 
 # requirements: streamlit, pandas, plotly, openpyxl
 
-st.set_page_config(page_title="Pano", layout="wide")
+st.set_page_config(
+    page_title="Pano", 
+    layout="wide"
+)
 
 # Premium modern tema CSS kodları
 st.markdown("""
@@ -46,4 +49,44 @@ st.markdown('<div class="subtitle">Şirket genel hedefleri ve dinamik temsilci p
 
 # --- SIDEBAR CONTROL PANEL ---
 st.sidebar.markdown("### ⚙️ Veri Kontrol Paneli")
-arama_filtresi = st.sidebar.text_input("👤 Temsilci Ara (Dinamik)", "").strip().lower
+arama_filtresi = st.sidebar.text_input("👤 Temsilci Ara (Dinamik)", "").strip().lower()
+
+if st.sidebar.button("🔄 Verileri Yenile / Sıfırla"):
+    st.cache_data.clear()
+    st.rerun()
+
+def clean_val(val):
+    if pd.isna(val): 
+        return 0
+    v_str = str(val).strip()
+    if v_str in ['None', 'nan', '-', '']: 
+        return 0
+    if '%' in v_str:
+        try: 
+            return float(v_str.replace('%', '').replace(',', '.')) / 100
+        except: 
+            return 0
+    try:
+        if '.' in v_str or ',' in v_str:
+            return float(v_str.replace(',', '.'))
+        else:
+            return int(v_str)
+    except: 
+        return 0
+
+def format_val(val, col_name):
+    c_lower = str(col_name).lower()
+    if 'oran' in c_lower or '%' in c_lower or 'başarı' in c_lower:
+        v_show = val if val <= 5.0 else val / 100.0
+        return "{:.1%}".format(v_show)
+    if isinstance(val, (int, float)):
+        if val == int(val):
+            return "{:,}".format(int(val))
+        return "{:,.2f}".format(val)
+    return str(val)
+
+def tr_lower(text):
+    if not text:
+        return ""
+    text = str(text).strip()
+    text = text.replace("İ", "i").replace("I", "ı").replace("Ş", "ş").replace("Ğ", "ğ").replace("Ü", "ü").replace("Ç", "ç")
