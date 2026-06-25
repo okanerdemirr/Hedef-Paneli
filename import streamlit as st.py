@@ -113,20 +113,13 @@ def renk_kurali(val):
 
 # --- OTOMATİK ARKA PLAN DOSYA MOTORU ---
 uploaded_file = None
+# Hatalı çift alan adı düzeltilerek bağlantılar temizlendi:
 kaynak_baglantilar = [
-    "https://raw.githubusercontent.com/github.com/okanerdemirr/Hedef-Paneli/main/veri.xlsx.xlsx",
+    "https://raw.githubusercontent.com/okanerdemirr/Hedef-Paneli/main/veri.xlsx.xlsx",
     "https://raw.githubusercontent.com/okanerdemirr/Hedef-Paneli/main/veri.xlsx",
     "https://raw.githubusercontent.com/okanerdemirr/Hedef-Paneli/main/veri"
 ]
 
 for url in kaynak_baglantilar:
     try:
-        uploaded_file = pd.ExcelFile(url)
-        if uploaded_file is not None:
-            break
-    except:
-        continue
-
-# --- MAIN ENGINE ---
-if uploaded_file is not None:
-    all_sheets = uploaded_file.sheet
+        uploaded_file = pd.ExcelFile(
