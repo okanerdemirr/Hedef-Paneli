@@ -78,7 +78,6 @@ def format_val(val, col_name, is_gelme_orani=False):
     c_lower = str(col_name).lower()
     if 'oran' in c_lower or '%' in c_lower or 'başarı' in c_lower:
         if is_gelme_orani:
-            # Gelme oranı verisi zaten 39.7, 50.7 gibi formatta olduğu için doğrudan yüzdeye eklenmeli
             v_show = val if val > 5.0 else val * 100.0
             return "{:.1f}%".format(v_show)
         else:
@@ -110,13 +109,11 @@ def dinamik_renk_kurali(val, is_gelme_orani=False):
                 v = v / 100.0
         
         if is_gelme_orani:
-            # Gelme Oranı için tam istediğin kural: %40 ve üzeri Yeşil, %39.9 ve altı Kırmızı
             if v >= 0.40:
                 return 'color: #10b981; font-weight: bold;'
             else:
                 return 'color: #ef4444; font-weight: bold;'
         else:
-            # Diğer standart sekmelerin kuralı
             if v >= 1.0:
                 return 'color: #10b981; font-weight: bold;'
             elif v >= 0.8:
@@ -251,77 +248,4 @@ if uploaded_file is not None:
                             if k == sutun_isimleri[0]:
                                 formatted_toplam[k] = v
                             else:
-                                formatted_toplam[k] = format_val(v, k, is_gelme_orani_page)
-                        toplam_satir_data = formatted_toplam
-                        continue
-                    
-                    if arama_filtresi == "" or arama_filtresi in t_isim_lower:
-                        kpi_tablo_rows.append(row_data)
-                
-                grafik_df = pd.DataFrame(kpi_tablo_rows).copy()
-                
-                formatted_rows = []
-                for row in kpi_tablo_rows:
-                    f_row = {}
-                    for k, v in row.items():
-                        if k == sutun_isimleri[0]:
-                            f_row[k] = v
-                        else:
-                            f_row[k] = format_val(v, k, is_gelme_orani_page)
-                    formatted_rows.append(f_row)
-                    
-                if toplam_satir_data and arama_filtresi == "":
-                    formatted_rows.append(toplam_satir_data)
-                    
-                if len(formatted_rows) > 0 and not (len(formatted_rows) == 1 and formatted_rows[0][sutun_isimleri[0]] == '🔴 Genel Toplam'):
-                    st.markdown("#### 📁 {} Veri Seti".format(tablo_basligi))
-                    kpi_tablo_df = pd.DataFrame(formatted_rows)
-                    
-                    # 🔴 GÜVENLİ PANDAS STYLER RENKLENDİRME MOTORU
-                    oran_sutunu = sutun_isimleri[-1] 
-                    try:
-                        styled_df = kpi_tablo_df.style.map(lambda x: dinamik_renk_kurali(x, is_gelme_orani_page), subset=[oran_sutunu])
-                        st.dataframe(styled_df, width="stretch", hide_index=True)
-                    except:
-                        st.dataframe(kpi_tablo_df, width="stretch", hide_index=True)
-                    
-                    y_ekseni = sutun_isimleri[1:-1] if ('oran' in sutun_isimleri[-1].lower() or '%' in sutun_isimleri[-1].lower()) else sutun_isimleri[1:]
-                    
-                    if not grafik_df.empty and len(y_ekseni) > 0:
-                        # Grafik barlarının renk lejantı ve mantığı %40'a göre tamamen senkronize edildi
-                        if is_gelme_orani_page:
-                            grafik_df['Grafik_Renk'] = grafik_df[sutun_isimleri[-1]].apply(
-                                lambda x: 'Başarılı (>=%40)' if (x >= 0.40 or x >= 40.0) else 'Yetersiz (<%40)'
-                            )
-                            color_map = {'Başarılı (>=%40)': '#10b981', 'Yetersiz (<%40)': '#ef4444'}
-                        else:
-                            grafik_df['Grafik_Renk'] = grafik_df[sutun_isimleri[-1]].apply(
-                                lambda x: 'Yüksek (>=%100)' if (x >= 1.0 or (x > 5.0 and x >= 100.0)) else ('Orta (%80-%99)' if (x >= 0.8 or (x > 5.0 and x >= 80.0)) else 'Düşük (<%80)')
-                            )
-                            color_map = {'Yüksek (>=%100)': '#10b981', 'Orta (%80-%99)': '#fbbf24', 'Düşük (<%80)': '#ef4444'}
-                        
-                        fig = px.bar(
-                            grafik_df, 
-                            x=sutun_isimleri[0], 
-                            y=y_ekseni, 
-                            barmode='group', 
-                            template="plotly_dark", 
-                            height=300,
-                            color='Grafik_Renk',
-                            color_discrete_map=color_map
-                        )
-                        
-                        fig.update_layout(
-                            margin=dict(l=20, r=20, t=20, b=20),
-                            legend_title_text='Performans Durumu',
-                            paper_bgcolor='rgba(0,0,0,0)',
-                            plot_bgcolor='rgba(0,0,0,0)'
-                        )
-                        
-                        st.plotly_chart(fig, width="stretch", use_container_width=True)
-    else:
-        st.info("ℹ️ Temsilci hedeflerine ait detaylı alt sayfalar bulunamadı.")
-else:
-    st.markdown("---")
-    st.warning("⚠️ **GitHub Deponuzdaki Excel Dosyası Okunamadı!**")
-    st.info("💡 **Çözüm:** Bilgisayarınızdaki güncel Excel dosyasının adını küçük harflerle tamamen **`veri.xlsx`** yapın ve GitHub'a yükleyin. Sistem dosyayı algıladığı an paneliniz anında açılacaktır.")
+                                formatted_toplam[k] = format_val(v, k, is_gelme_orani_page
