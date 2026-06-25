@@ -5,7 +5,7 @@ import plotly.express as px
 # requirements: streamlit, pandas, plotly, openpyxl
 
 st.set_page_config(
-    page_title="Pano", 
+    page_title="Temsilci Performans Paneli", 
     layout="wide"
 )
 
@@ -51,7 +51,7 @@ st.markdown('<div class="subtitle">Şirket genel hedefleri ve dinamik temsilci p
 st.sidebar.markdown("### ⚙️ Veri Kontrol Paneli")
 arama_filtresi = st.sidebar.text_input("👤 Temsilci Ara (Dinamik)", "").strip().lower()
 
-if st.sidebar.button("🔄 Verileri Yenile / Sıfırla"):
+if st.sidebar.button("🔄 Hafızayı Temizle ve Yenile"):
     st.cache_data.clear()
     st.rerun()
 
@@ -63,35 +63,4 @@ def clean_val(val):
         return 0
     if '%' in v_str:
         try: 
-            return float(v_str.replace('%', '').replace(',', '.')) / 100
-        except: 
-            return 0
-    try:
-        if '.' in v_str or ',' in v_str:
-            return float(v_str.replace(',', '.'))
-        else:
-            return int(v_str)
-    except: 
-        return 0
-
-def format_val(val, col_name):
-    c_lower = str(col_name).lower()
-    if 'oran' in c_lower or '%' in c_lower or 'başarı' in c_lower:
-        if val <= 1:
-            return "{:.1%}".format(val)
-        else:
-            return "{:.1f}%".format(val)
-    if isinstance(val, (int, float)):
-        if val == int(val):
-            return "{:,}".format(int(val))
-        return "{:,.2f}".format(val)
-    return str(val)
-
-def tr_lower(text):
-    if not text:
-        return ""
-    text = str(text).strip()
-    text = text.replace("İ", "i").replace("I", "ı").replace("Ş", "ş").replace("Ğ", "ğ").replace("Ü", "ü").replace("Ç", "ç")
-    return text.lower()
-
-# Tablo hücrelerini Pandas
+            return float(v_str.replace
