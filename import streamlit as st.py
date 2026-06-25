@@ -94,32 +94,4 @@ def tr_lower(text):
     text = text.replace("İ", "i").replace("I", "ı").replace("Ş", "ş").replace("Ğ", "ğ").replace("Ü", "ü").replace("Ç", "ç")
     return text.lower()
 
-# Tablo hücrelerini Pandas üzerinden renklendiren güvenli fonksiyon
-def renk_kurali(val):
-    try:
-        if isinstance(val, str) and '%' in val:
-            v = float(val.replace('%', '').replace(',', '.')) / 100
-        else:
-            v = float(val)
-        
-        if v >= 1.0:
-            return 'color: #10b981; font-weight: bold;' # >= %100 Yeşil
-        elif v >= 0.8:
-            return 'color: #fbbf24; font-weight: bold;' # %80 - %99 Sarı
-        else:
-            return 'color: #ef4444; font-weight: bold;' # <= %79 Kırmızı
-    except:
-        return ''
-
-# --- OTOMATİK ARKA PLAN DOSYA MOTORU ---
-uploaded_file = None
-# Hatalı çift alan adı düzeltilerek bağlantılar temizlendi:
-kaynak_baglantilar = [
-    "https://raw.githubusercontent.com/okanerdemirr/Hedef-Paneli/main/veri.xlsx.xlsx",
-    "https://raw.githubusercontent.com/okanerdemirr/Hedef-Paneli/main/veri.xlsx",
-    "https://raw.githubusercontent.com/okanerdemirr/Hedef-Paneli/main/veri"
-]
-
-for url in kaynak_baglantilar:
-    try:
-        uploaded_file = pd.ExcelFile(
+# Tablo hücrelerini Pandas
