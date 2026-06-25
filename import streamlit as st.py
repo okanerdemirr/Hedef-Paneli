@@ -73,7 +73,6 @@ def clean_val(val, is_ozel_sayfa=False):
 
 def format_val(val, col_name):
     c_lower = str(col_name).lower()
-    # Kırpılmayı önlemek adına uzun kontrol satırı alt alta güvenli parçalara bölündü
     is_oran = (
         'oran' in c_lower or 
         '%' in c_lower or 
@@ -93,4 +92,4 @@ def tr_lower(text):
     text = text.replace("İ", "i").replace("I", "ı").replace("Ş", "ş").replace("Ğ", "ğ").replace("Ü", "ü").replace("Ç", "ç")
     return text.lower()
 
-def dinamik_renk_kurali_hibrit(val, page_type="std
+# Kırpılmayı kökten engellemek adına "
