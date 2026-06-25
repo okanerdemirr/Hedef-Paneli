@@ -55,4 +55,16 @@ def clean_val(val):
     v_str = str(val).strip()
     if v_str in ['None', 'nan', '-', '']: return 0
     if '%' in v_str:
-        try: return float(v_str.replace('%', '').replace
+        v_str = v_str.replace('%', '').replace(',', '.')
+        try: return float(v_str) / 100
+        except: return 0
+    try:
+        if '.' in v_str or ',' in v_str: return float(v_str.replace(',', '.'))
+        return int(v_str)
+    except: return 0
+
+def format_val(val, col_name, is_gelme_orani=False):
+    c_lower = str(col_name).lower()
+    if 'oran' in c_lower or '%' in c_lower or 'başarı' in c_lower:
+        if is_gelme_orani:
+            v_show = val if val > 5.0 else val * 100.0
