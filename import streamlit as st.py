@@ -46,4 +46,4 @@ st.markdown('<div class="subtitle">Şirket genel hedefleri ve dinamik temsilci p
 
 # --- SIDEBAR CONTROL PANEL ---
 st.sidebar.markdown("### ⚙️ Veri Kontrol Paneli")
-arama_fil
+arama_filtresi = st.sidebar.text_input("👤 Temsilci Ara (Dinamik)", "").strip().lower
