@@ -4,10 +4,7 @@ import plotly.express as px
 
 # requirements: streamlit, pandas, plotly, openpyxl
 
-st.set_page_config(
-    page_title="Pano", 
-    layout="wide"
-)
+st.set_page_config(page_title="Pano", layout="wide")
 
 # Premium modern tema CSS kodları
 st.markdown("""
@@ -49,11 +46,4 @@ st.markdown('<div class="subtitle">Şirket genel hedefleri ve dinamik temsilci p
 
 # --- SIDEBAR CONTROL PANEL ---
 st.sidebar.markdown("### ⚙️ Veri Kontrol Paneli")
-arama_filtresi = st.sidebar.text_input("👤 Temsilci Ara (Dinamik)", "").strip().lower()
-
-if st.sidebar.button("🔄 Verileri Yenile / Sıfırla"):
-    st.cache_data.clear()
-    st.rerun()
-
-def clean_val(val):
-    if pd.isna(val):
+arama_fil
