@@ -51,4 +51,19 @@ if st.sidebar.button("🔄 Yenile"):
     st.cache_data.clear()
     st.rerun()
 
-def clean_val(val, is_ozel_sayfa=False
+# Kırpılmayı önlemek için fonksiyon parametreleri ve ilk satır kısaltıldı
+def clean_val(val, is_ozel=False):
+    if pd.isna(val): return 0
+    v_str = str(val).strip()
+    if v_str in ['None', 'nan', '-', '']: return 0
+    if '%' in v_str:
+        v_str = v_str.replace('%', '').replace(',', '.')
+        try: return float(v_str) / 100
+        except: return 0
+    try:
+        if '.' in v_str or ',' in v_str:
+            res = float(v_str.replace(',', '.'))
+            if is_ozel and 0 < res < 100: return res / 100.0
+            return res
+        num = int(v_str)
+        if is_ozel and 0 < num < 100: return num / 10
