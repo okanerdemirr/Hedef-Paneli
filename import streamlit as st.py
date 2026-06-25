@@ -55,11 +55,12 @@ def clean_val(val):
     v_str = str(val).strip()
     if v_str in ['None', 'nan', '-', '']: return 0
     if '%' in v_str:
-        try: return float(v_str.replace('%', '').replace(',', '.')) / 100
+        v_str = v_str.replace('%', '').replace(',', '.')
+        try: return float(v_str) / 100
         except: return 0
     try:
         if '.' in v_str or ',' in v_str: return float(v_str.replace(',', '.'))
-        else: return int(v_str)
+        return int(v_str)
     except: return 0
 
 def format_val(val, col_name, is_gelme_orani=False):
@@ -68,9 +69,8 @@ def format_val(val, col_name, is_gelme_orani=False):
         if is_gelme_orani:
             v_show = val if val > 5.0 else val * 100.0
             return "{:.1f}%".format(v_show)
-        else:
-            v_show = val if val <= 5.0 else val / 100.0
-            return "{:.1%}".format(v_show)
+        v_show = val if val <= 5.0 else val / 100.0
+        return "{:.1%}".format(v_show)
     if isinstance(val, (int, float)):
         if val == int(val): return "{:,}".format(int(val))
         return "{:,.2f}".format(val)
@@ -82,20 +82,28 @@ def tr_lower(text):
     text = text.replace("İ", "i").replace("I", "ı").replace("Ş", "ş").replace("Ğ", "ğ").replace("Ü", "ü").replace("Ç", "ç")
     return text.lower()
 
-def dinamik_renk_kurali(val, is_gelme_orani=False):
+# Sekme adına göre çalışan 3 kademeli akıllı dinamik renklendirme motoru
+def dinamik_renk_kurali_hibrit(val, page_type="standart"):
     try:
-        if isinstance(val, str) and '%' in val: v = float(val.replace('%', '').replace(',', '.')) / 100
+        if isinstance(val, str) and '%' in val:
+            v = float(val.replace('%', '').replace(',', '.')) / 100
         else:
             v = float(val)
-            if not is_gelme_orani and v > 5.0: v = v / 100.0
-            elif is_gelme_orani and v > 5.0: v = v / 100.0
-        if is_gelme_orani:
+            if v > 5.0: v = v / 100.0
+        
+        if page_type == "kriter":
+            # Kriter Dışı Kuralı: %20 ve altı Yeşil, %21 ve üzeri Kırmızı
+            if v <= 0.20: return 'color: #10b981; font-weight: bold;'
+            return 'color: #ef4444; font-weight: bold;'
+        elif page_type == "gelme":
+            # Gelme Oranı Kuralı: %40 ve üzeri Yeşil, %39 ve altı Kırmızı
             if v >= 0.40: return 'color: #10b981; font-weight: bold;'
-            else: return 'color: #ef4444; font-weight: bold;'
+            return 'color: #ef4444; font-weight: bold;'
         else:
+            # Standart Sekmeler Kuralı: %100+ Yeşil, %80-%99 Sarı, %79- Kırmızı
             if v >= 1.0: return 'color: #10b981; font-weight: bold;'
-            elif v >= 0.8: return 'color: #fbbf24; font-weight: bold;'
-            else: return 'color: #ef4444; font-weight: bold;'
+            if v >= 0.8: return 'color: #fbbf24; font-weight: bold;'
+            return 'color: #ef4444; font-weight: bold;'
     except: return ''
 
 uploaded_file = None
@@ -183,6 +191,12 @@ if uploaded_file is not None:
                     
                 tablo_basligi = sekme_isimleri[idx]
                 is_gelme_orani_page = "gelme" in sheet.lower()
+                is_kriter_disi_page = "kriter" in sheet.lower()
+                
+                # Sayfa etiket tipi belirleniyor
+                current_page_type = "standart"
+                if is_kriter_disi_page: current_page_type = "kriter"
+                elif is_gelme_orani_page: current_page_type = "gelme"
                 
                 sutun_isimleri = [str(df_sheet.iloc[0, col_idx]).strip() for col_idx in range(df_sheet.shape[1])]
                 sutun_isimleri = [name if (name and name != 'nan') else "Sütun {}".format(i) for i, name in enumerate(sutun_isimleri)]
@@ -233,7 +247,7 @@ if uploaded_file is not None:
                     
                     oran_sutunu = sutun_isimleri[-1] 
                     try:
-                        styled_df = kpi_tablo_df.style.map(lambda x: dinamik_renk_kurali(x, is_gelme_orani_page), subset=[oran_sutunu])
+                        styled_df = kpi_tablo_df.style.map(lambda x: dinamik_renk_kurali_hibrit(x, current_page_type), subset=[oran_sutunu])
                         st.dataframe(styled_df, width="stretch", hide_index=True)
                     except:
                         st.dataframe(kpi_tablo_df, width="stretch", hide_index=True)
@@ -241,8 +255,11 @@ if uploaded_file is not None:
                     y_ekseni = sutun_isimleri[1:-1] if ('oran' in sutun_isimleri[-1].lower() or '%' in sutun_isimleri[-1].lower()) else sutun_isimleri[1:]
                     
                     if not grafik_df.empty and len(y_ekseni) > 0:
-                        # Girinti hatası yaratabilecek tüm yorum satırları kaldırıldı ve koşullar tek satıra indirgendi
-                        if is_gelme_orani_page:
+                        # Grafik renklendirme motoruna Kriter Dışı kuralları ve %20 yüzdelik taban koruması entegre edildi
+                        if current_page_type == "kriter":
+                            grafik_df['Grafik_Renk'] = grafik_df[oran_sutunu].apply(lambda x: 'Başarılı (<=%20)' if (x <= 20.0 or (x <= 5.0 and x <= 0.20)) else 'Yetersiz (>%20)')
+                            color_map = {'Başarılı (<=%20)': '#10b981', 'Yetersiz (>%20)': '#ef4444'}
+                        elif current_page_type == "gelme":
                             grafik_df['Grafik_Renk'] = grafik_df[oran_sutunu].apply(lambda x: 'Başarılı (>=%40)' if (x >= 40.0 or (x <= 5.0 and x >= 0.40)) else 'Yetersiz (<%40)')
                             color_map = {'Başarılı (>=%40)': '#10b981', 'Yetersiz (<%40)': '#ef4444'}
                         else:
@@ -266,7 +283,6 @@ if uploaded_file is not None:
                             paper_bgcolor='rgba(0,0,0,0)',
                             plot_bgcolor='rgba(0,0,0,0)'
                         )
-                        
                         st.plotly_chart(fig, width="stretch", use_container_width=True)
     else:
         st.info("ℹ️ Temsilci hedeflerine ait detaylı alt sayfalar bulunamadı.")
