@@ -56,20 +56,18 @@ def clean_val(val, is_ozel_sayfa=False):
     v_str = str(val).strip()
     if v_str in ['None', 'nan', '-', '']: return 0
     
-    # Yüzde sembolü varsa temizle ve 100'e böl
     if '%' in v_str:
         v_str = v_str.replace('%', '').replace(',', '.')
         try: return float(v_str) / 100.0
         except: return 0
         
     try:
-        # Virgülleri noktaya çevir
         if ',' in v_str:
             v_str = v_str.replace(',', '.')
             
         res = float(v_str)
         
-        # Eğer Excel'den metin formatında "85" veya "91.2" gibi gelmişse bunu orana (0.85) çevir
+        # Excel'den metin formatında "85" veya "91.2" gibi gelmişse orana (0.85) çevirir
         if is_ozel_sayfa and res > 1.0:
             return res / 100.0
             
@@ -79,6 +77,7 @@ def clean_val(val, is_ozel_sayfa=False):
 
 def format_val(val, col_name):
     c_lower = str(col_name).lower()
+    # Sütun adı sadece "Verimlilik" olsa bile algılaması için "verimlilik" kontrolü eklendi
     if 'oran' in c_lower or '%' in c_lower or 'başarı' in c_lower or 'verimlilik' in c_lower:
         return "{:.1%}".format(val)
     if isinstance(val, (int, float)):
@@ -162,48 +161,4 @@ if uploaded_file is not None:
             oran_val = v3 if v3 > 0 else (v2 / v1 if v1 > 0 else 0)
             is_kpi = any(x in h_adi for x in ["lead", "rezervasyon", "hedef"])
             
-            if oran_val > 1 and not is_kpi: oran_val = oran_val / 100
-
-            if "lead" in h_adi: kpi_toplamlar["Lead"] = {"hedef": v1, "gerceklesen": v2, "oran_val": oran_val}
-            elif "gelen" in h_adi and "rezerv" in h_adi: kpi_toplamlar["Gelen Rezervasyon"] = {"hedef": v1, "gerceklesen": v2, "oran_val": oran_val}
-            elif "sat" in h_adi: kpi_toplamlar["Satış"] = {"hedef": v1, "gerceklesen": v2, "oran_val": oran_val}
-            elif "kriter" in h_adi: kpi_toplamlar["Kriter Dışı"] = {"hedef": v1 if v1 <= 1 else v1/100, "gerceklesen": v2 / 100 if v2 > 1 else v2, "oran_val": v2/100 if v2 > 1 else v2}
-            elif "gelme" in h_adi: kpi_toplamlar["Gelme Oranı"] = {"hedef": v1 if v1 <= 1 else v1/100, "gerceklesen": v2 / 100 if v2 > 1 else v2, "oran_val": v2/100 if v2 > 1 else v2}
-
-    st.markdown('<div class="section-title">⚡ Şirket Genel Performans Matrisi</div>', unsafe_allow_html=True)
-    ana_kpi_sirasi = ["Lead", "Gelen Rezervasyon", "Satış", "Kriter Dışı", "Gelme Oranı"]
-    cols = st.columns(len(ana_kpi_sirasi))
-    
-    for idx, name in enumerate(ana_kpi_sirasi):
-        with cols[idx]:
-            st.markdown('<div class="card-title">💎 {}</div>'.format(name), unsafe_allow_html=True)
-            h_data = kpi_toplamlar[name]["hedef"]
-            g_data = kpi_toplamlar[name]["gerceklesen"]
-            o_data = kpi_toplamlar[name]["oran_val"]
-            
-            if name in ["Gelme Oranı", "Kriter Dışı"]:
-                h_str = "Hedef: {:.1%}".format(h_data) if h_data <= 1 else "Hedef: {:.1f}%".format(h_data)
-                g_str = "{:.1%}".format(g_data) if g_data <= 1 else "{:.1f}%".format(g_data)
-                st.markdown('<div style="color:#94a3b8; font-size:13px; margin-bottom:5px;">{}</div>'.format(h_str), unsafe_allow_html=True)
-                st.metric(label="", value=g_str, delta="Gerçekleşen", delta_color="normal")
-            else:
-                h_str = "Hedef: {:,}".format(int(h_data))
-                g_str = "{:,}".format(int(g_data))
-                st.markdown('<div style="color:#94a3b8; font-size:13px; margin-bottom:5px;">{}</div>'.format(h_str), unsafe_allow_html=True)
-                st.metric(label="", value=g_str, delta="Başarı: {:.1%}".format(o_data), delta_color="normal")
-
-    st.markdown('<hr style="border-top: 1px solid #334155; margin-top:30px; margin-bottom:20px;">', unsafe_allow_html=True)
-    st.markdown('<div class="section-title">👥 Temsilci Performans Kırılımları</div>', unsafe_allow_html=True)
-
-    hedef_sayfalari = [s for s in all_sheets if "genel" not in s.lower() and tr_lower(s) != "verimlilik hesaplaması"]
-    
-    if hedef_sayfalari:
-        sekme_isimleri = [sheet.replace("Hedef", "").replace("hedef", "").strip() for sheet in hedef_sayfalari]
-        sekmeler = st.tabs(sekme_isimleri)
-        
-        for idx, sheet in enumerate(hedef_sayfalari):
-            with sekmeler[idx]:
-                df_sheet = pd.read_excel(uploaded_file, sheet_name=sheet, header=None)
-                if df_sheet.shape[0] == 0 or df_sheet.shape[1] == 0: continue
-                    
-                tablo
+            if oran_val > 1 and not is_kpi: oran_val = oran
