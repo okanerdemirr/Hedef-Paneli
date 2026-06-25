@@ -71,7 +71,7 @@ def clean_val(val, is_ozel_sayfa=False):
 
 def format_val(val, col_name):
     c_lower = str(col_name).lower()
-    if 'oran' in c_lower or '%' in c_lower or 'başarı' in c_lower:
+    if 'oran' in c_lower or '%' in c_lower or 'başarı' in c_lower or 'verimlilik' in c_lower:
         return "{:.1%}".format(val)
     if isinstance(val, (int, float)):
         if val == int(val): return "{:,}".format(int(val))
@@ -84,7 +84,7 @@ def tr_lower(text):
     text = text.replace("İ", "i").replace("I", "ı").replace("Ş", "ş").replace("Ğ", "ğ").replace("Ü", "ü").replace("Ç", "ç")
     return text.lower()
 
-# Sekme adına göre çalışan 5 kademeli gelişmiş dinamik renklendirme motoru
+# Dinamik Renklendirme Motoru
 def dinamik_renk_kurali_hibrit(val, page_type="std"):
     try:
         if isinstance(val, str) and '%' in val:
@@ -95,9 +95,6 @@ def dinamik_renk_kurali_hibrit(val, page_type="std"):
         
         if page_type == "verimlilik":
             if v >= 0.80: return 'color: #10b981; font-weight: bold;'
-            return 'color: #ef4444; font-weight: bold;'
-        elif page_type == "ulasim":
-            if v >= 0.70: return 'color: #10b981; font-weight: bold;'
             return 'color: #ef4444; font-weight: bold;'
         elif page_type == "kriter":
             if v <= 0.20: return 'color: #10b981; font-weight: bold;'
@@ -112,7 +109,11 @@ def dinamik_renk_kurali_hibrit(val, page_type="std"):
     except: return ''
 
 uploaded_file = None
-kaynak_baglantilar = ["https://raw.githubusercontent.com/okanerdemirr/Hedef-Paneli/main/veri.xlsx.xlsx", "https://raw.githubusercontent.com/okanerdemirr/Hedef-Paneli/main/veri.xlsx", "https://raw.githubusercontent.com/okanerdemirr/Hedef-Paneli/main/veri"]
+kaynak_baglantilar = [
+    "https://raw.githubusercontent.com/okanerdemirr/Hedef-Paneli/main/veri.xlsx.xlsx",
+    "https://raw.githubusercontent.com/okanerdemirr/Hedef-Paneli/main/veri.xlsx",
+    "https://raw.githubusercontent.com/okanerdemirr/Hedef-Paneli/main/veri"
+]
 
 for url in kaynak_baglantilar:
     try:
@@ -179,7 +180,6 @@ if uploaded_file is not None:
     st.markdown('<hr style="border-top: 1px solid #334155; margin-top:30px; margin-bottom:20px;">', unsafe_allow_html=True)
     st.markdown('<div class="section-title">👥 Temsilci Performans Kırılımları</div>', unsafe_allow_html=True)
 
-    # Genel Hedef sayfası hariç tüm sayfaları tam adı "verimlilik hesaplaması" uyuşmayacak şekilde dinamik tarar
     hedef_sayfalari = [s for s in all_sheets if "genel" not in s.lower() and tr_lower(s) != "verimlilik hesaplaması"]
     
     if hedef_sayfalari:
@@ -194,15 +194,13 @@ if uploaded_file is not None:
                 tablo_basligi = sekme_isimleri[idx]
                 is_gelme_orani_page = "gelme" in sheet.lower()
                 is_kriter_disi_page = "kriter" in sheet.lower()
-                is_ulasim_orani_page = "ulasim" in sheet.lower() or "ulaşım" in sheet.lower()
                 is_verimlilik_page = "verimlilik" in sheet.lower()
-                is_ozel_s = is_gelme_orani_page or is_kriter_disi_page or is_ulasim_orani_page or is_verimlilik_page
+                is_ozel_s = is_gelme_orani_page or is_kriter_disi_page or is_verimlilik_page
                 
                 if is_gelme_orani_page: page_type = "gelme"
                 elif is_kriter_disi_page: page_type = "kriter"
-                elif is_ulasim_orani_page: page_type = "ulasim"
                 elif is_verimlilik_page: page_type = "verimlilik"
-                else: page_type = "std"
+                else: page_type = "standart"
                 
                 sutun_isimleri = [str(df_sheet.iloc[0, col_idx]).strip() for col_idx in range(df_sheet.shape[1])]
                 sutun_isimleri = [name if (name and name != 'nan') else f"Sütun {i}" for i, name in enumerate(sutun_isimleri)]
@@ -255,15 +253,12 @@ if uploaded_file is not None:
                     except:
                         st.dataframe(kpi_tablo_df, width="stretch", hide_index=True)
                     
-                    y_ekseni = sutun_isimleri[1:-1] if ('oran' in sutun_isimleri[-1].lower() or '%' in sutun_isimleri[-1].lower()) else sutun_isimleri[1:]
+                    y_ekseni = sutun_isimleri[1:-1] if ('oran' in sutun_isimleri[-1].lower() or '%' in sutun_isimleri[-1].lower() or 'verimlilik' in sutun_isimleri[-1].lower()) else sutun_isimleri[1:]
                     
                     if not grafik_df.empty and len(y_ekseni) > 0:
                         if page_type == "verimlilik":
                             grafik_df['Grafik_Renk'] = grafik_df[oran_sutunu].apply(lambda x: 'Başarılı (>=%80)' if (x >= 0.80 or x >= 80.0) else 'Yetersiz (<%80)')
                             color_map = {'Başarılı (>=%80)': '#10b981', 'Yetersiz (<%80)': '#ef4444'}
-                        elif page_type == "ulasim":
-                            grafik_df['Grafik_Renk'] = grafik_df[oran_sutunu].apply(lambda x: 'Başarılı (>=%70)' if (x >= 0.70 or x >= 70.0) else 'Yetersiz (<%70)')
-                            color_map = {'Başarılı (>=%70)': '#10b981', 'Yetersiz (<%70)': '#ef4444'}
                         elif page_type == "kriter":
                             grafik_df['Grafik_Renk'] = grafik_df[oran_sutunu].apply(lambda x: 'Başarılı (<=%20)' if (x <= 0.20 or x <= 20.0) else 'Yetersiz (>%20)')
                             color_map = {'Başarılı (<=%20)': '#10b981', 'Yetersiz (>%20)': '#ef4444'}
@@ -297,4 +292,4 @@ if uploaded_file is not None:
 else:
     st.markdown("---")
     st.warning("⚠️ **GitHub Deponuzdaki Excel Dosyası Okunamadı!**")
-    st.info("💡 **Çözüm:** Bilgisayarınızdaki güncel Excel dosyasının adını küçük harflerle tamamen **`veri.xlsx`** yapın and GitHub'a yükleyin. Sistem dosyayı algıladığı an paneliniz anında açılacaktır.")
+    st.info("💡 **Çözüm:** Bilgisayarınızdaki güncel Excel dosyasının adını küçük harflerle tamamen **`veri.xlsx`** yapın ve GitHub'a yükleyin. Sistem dosyayı algıladığı an paneliniz anında açılacaktır.")
