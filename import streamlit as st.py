@@ -6,6 +6,7 @@ import plotly.express as px
 
 st.set_page_config(page_title="Pano", layout="wide")
 
+# Premium modern tema CSS kodları
 st.markdown("""
     <style>
         .main-title { font-size: 34px !important; font-weight: 800 !important; color: #ffffff; margin-bottom: 2px; letter-spacing: -0.5px; }
@@ -50,7 +51,8 @@ if st.sidebar.button("🔄 Verileri Yenile / Sıfırla"):
     st.cache_data.clear()
     st.rerun()
 
-def clean_val(val):
+# Hücre temizleme motoruna sayfa özel koruması eklendi
+def clean_val(val, is_ozel_sayfa=False):
     if pd.isna(val): return 0
     v_str = str(val).strip()
     if v_str in ['None', 'nan', '-', '']: return 0
@@ -59,22 +61,22 @@ def clean_val(val):
         try: return float(v_str) / 100
         except: return 0
     try:
-        if '.' in v_str or ',' in v_str: return float(v_str.replace(',', '.'))
-        return int(v_str)
+        if '.' in v_str or ',' in v_str:
+            res = float(v_str.replace(',', '.'))
+            # Eğer Kriter Dışı veya Gelme Oranı sayfasıysa ve veri Google Sheets'ten 3.22 gibi ham gelmişse bölme/çarpma yapma
+            if is_ozel_sayfa and res > 0 and res < 100:
+                return res / 100.0
+            return res
+        num = int(v_str)
+        if is_ozel_sayfa and num > 0 and num < 100:
+            return num / 100.0
+        return num
     except: return 0
 
-def format_val(val, col_name, is_gelme_orani=False, is_kriter_disi=False):
+def format_val(val, col_name):
     c_lower = str(col_name).lower()
     if 'oran' in c_lower or '%' in c_lower or 'başarı' in c_lower:
-        if is_gelme_orani:
-            v_show = val if val > 5.0 else val * 100.0
-            return "{:.1f}%".format(v_show)
-        elif is_kriter_disi:
-            v_show = val if val > 5.0 else val * 100.0
-            if v_show > 500.0: v_show = v_show / 100.0
-            return "{:.1f}%".format(v_show)
-        v_show = val if val <= 5.0 else val / 100.0
-        return "{:.1%}".format(v_show)
+        return "{:.1%}".format(val)
     if isinstance(val, (int, float)):
         if val == int(val): return "{:,}".format(int(val))
         return "{:,.2f}".format(val)
@@ -92,9 +94,6 @@ def dinamik_renk_kurali_hibrit(val, page_type="standart"):
             v = float(val.replace('%', '').replace(',', '.')) / 100
         else:
             v = float(val)
-            if v > 5.0: v = v / 100.0
-            if page_type == "kriter":
-                if v > 5.0: v = v / 100.0
         
         if page_type == "kriter":
             if v <= 0.20: return 'color: #10b981; font-weight: bold;'
@@ -140,9 +139,10 @@ if uploaded_file is not None:
             h_adi = tr_lower(df_g.iloc[r, 0]).replace('\n', ' ')
             if not h_adi or h_adi == 'nan': continue
             
-            v1 = clean_val(df_g.iloc[r, 1])
-            v2 = clean_val(df_g.iloc[r, 2])
-            v3 = clean_val(df_g.iloc[r, 3]) if df_g.shape[1] > 3 else 0
+            # Genel hedef kısmında standart okuma
+            v1 = clean_val(df_g.iloc[r, 1], False)
+            v2 = clean_val(df_g.iloc[r, 2], False)
+            v3 = clean_val(df_g.iloc[r, 3], False) if df_g.shape[1] > 3 else 0
             
             oran_val = v3 if v3 > 0 else (v2 / v1 if v1 > 0 else 0)
             is_kpi = any(x in h_adi for x in ["lead", "rezervasyon", "hedef"])
@@ -194,6 +194,7 @@ if uploaded_file is not None:
                 tablo_basligi = sekme_isimleri[idx]
                 is_gelme_orani_page = "gelme" in sheet.lower()
                 is_kriter_disi_page = "kriter" in sheet.lower()
+                is_ozel_s = is_gelme_orani_page or is_kriter_disi_page
                 
                 if is_gelme_orani_page: page_type = "gelme"
                 elif is_kriter_disi_page: page_type = "kriter"
@@ -216,7 +217,8 @@ if uploaded_file is not None:
                     
                     for col_idx in range(1, df_sheet.shape[1]):
                         raw_val = df_sheet.iloc[r, col_idx]
-                        cleaned = clean_val(raw_val)
+                        # Temizleme motoruna ozel sayfa parametresi gönderiliyor
+                        cleaned = clean_val(raw_val, is_ozel_s)
                         row_data[sutun_isimleri[col_idx]] = cleaned
                     
                     if 'toplam' in t_isim_lower or 'genel' in t_isim_lower:
@@ -224,7 +226,7 @@ if uploaded_file is not None:
                         formatted_toplam = {}
                         for k, v in row_data.items():
                             if k == sutun_isimleri[0]: formatted_toplam[k] = v
-                            else: formatted_toplam[k] = format_val(v, k, is_gelme_orani_page, is_kriter_disi_page)
+                            else: formatted_toplam[k] = format_val(v, k)
                         toplam_satir_data = formatted_toplam
                         continue
                     
@@ -237,7 +239,7 @@ if uploaded_file is not None:
                     f_row = {}
                     for k, v in row.items():
                         if k == sutun_isimleri[0]: f_row[k] = v
-                        else: f_row[k] = format_val(v, k, is_gelme_orani_page, is_kriter_disi_page)
+                        else: f_row[k] = format_val(v, k)
                     formatted_rows.append(f_row)
                     
                 if toplam_satir_data and arama_filtresi == "": formatted_rows.append(toplam_satir_data)
@@ -257,13 +259,13 @@ if uploaded_file is not None:
                     
                     if not grafik_df.empty and len(y_ekseni) > 0:
                         if page_type == "kriter":
-                            grafik_df['Grafik_Renk'] = grafik_df[oran_sutunu].apply(lambda x: 'Başarılı (<=%20)' if (x <= 20.0 or (x <= 5.0 and x*100.0 <= 20.0) or (x > 5.0 and x/100.0 <= 0.20)) else 'Yetersiz (>%20)')
+                            grafik_df['Grafik_Renk'] = grafik_df[oran_sutunu].apply(lambda x: 'Başarılı (<=%20)' if x <= 0.20 else 'Yetersiz (>%20)')
                             color_map = {'Başarılı (<=%20)': '#10b981', 'Yetersiz (>%20)': '#ef4444'}
                         elif page_type == "gelme":
-                            grafik_df['Grafik_Renk'] = grafik_df[oran_sutunu].apply(lambda x: 'Başarılı (>=%40)' if (x >= 40.0 or (x <= 5.0 and x >= 0.40)) else 'Yetersiz (<%40)')
+                            grafik_df['Grafik_Renk'] = grafik_df[oran_sutunu].apply(lambda x: 'Başarılı (>=%40)' if x >= 0.40 else 'Yetersiz (<%40)')
                             color_map = {'Başarılı (>=%40)': '#10b981', 'Yetersiz (<%40)': '#ef4444'}
                         else:
-                            grafik_df['Grafik_Renk'] = grafik_df[oran_sutunu].apply(lambda x: 'Yüksek (>=%100)' if (x >= 1.0 or (x > 5.0 and x >= 100.0)) else ('Orta (%80-%99)' if (x >= 0.8 or (x > 5.0 and x >= 80.0)) else 'Düşük (<%80)'))
+                            grafik_df['Grafik_Renk'] = grafik_df[oran_sutunu].apply(lambda x: 'Yüksek (>=%100)' if x >= 1.0 else ('Orta (%80-%99)' if x >= 0.8 else 'Düşük (<%80)'))
                             color_map = {'Yüksek (>=%100)': '#10b981', 'Orta (%80-%99)': '#fbbf24', 'Düşük (<%80)': '#ef4444'}
                         
                         fig = px.bar(
