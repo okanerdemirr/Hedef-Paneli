@@ -84,7 +84,6 @@ def tr_lower(text):
     text = text.replace("İ", "i").replace("I", "ı").replace("Ş", "ş").replace("Ğ", "ğ").replace("Ü", "ü").replace("Ç", "ç")
     return text.lower()
 
-# Sekme adına göre çalışan 5 kademeli gelişmiş dinamik renklendirme motoru
 def dinamik_renk_kurali_hibrit(val, page_type="standart"):
     try:
         if isinstance(val, str) and '%' in val:
@@ -94,23 +93,18 @@ def dinamik_renk_kurali_hibrit(val, page_type="standart"):
             if v > 5.0: v = v / 100.0
         
         if page_type == "verimlilik":
-            # Verimlilik Kuralı: %80 ve üzeri Yeşil, %79 ve altı Kırmızı
             if v >= 0.80: return 'color: #10b981; font-weight: bold;'
             return 'color: #ef4444; font-weight: bold;'
         elif page_type == "ulasim":
-            # Ulaşım Oranı Kuralı: %70 ve üzeri Yeşil, %69 ve altı Kırmızı
             if v >= 0.70: return 'color: #10b981; font-weight: bold;'
             return 'color: #ef4444; font-weight: bold;'
         elif page_type == "kriter":
-            # Kriter Dışı Kuralı: %20 ve altı Yeşil, %21 ve üzeri Kırmızı
             if v <= 0.20: return 'color: #10b981; font-weight: bold;'
             return 'color: #ef4444; font-weight: bold;'
         elif page_type == "gelme":
-            # Gelme Oranı Kuralı: %40 ve üzeri Yeşil, %39 ve altı Kırmızı
             if v >= 0.40: return 'color: #10b981; font-weight: bold;'
             return 'color: #ef4444; font-weight: bold;'
         else:
-            # Standart Sekmeler Kuralı: %100+ Yeşil, %80-%99 Sarı, %79- Kırmızı
             if v >= 1.0: return 'color: #10b981; font-weight: bold;'
             if v >= 0.8: return 'color: #fbbf24; font-weight: bold;'
             return 'color: #ef4444; font-weight: bold;'
@@ -188,7 +182,8 @@ if uploaded_file is not None:
     st.markdown('<hr style="border-top: 1px solid #334155; margin-top:30px; margin-bottom:20px;">', unsafe_allow_html=True)
     st.markdown('<div class="section-title">👥 Temsilci Performans Kırılımları</div>', unsafe_allow_html=True)
 
-    hedef_sayfalari = [s for s in all_sheets if "genel" not in s.lower()]
+    # "verimlilik hesaplaması" sekmesini dashboard panelinden gizleme filtresi uygulandı
+    hedef_sayfalari = [s for s in all_sheets if "genel" not in s.lower() and "verimlilik hesaplaması" not in s.lower()]
     
     if hedef_sayfalari:
         sekme_isimleri = [sheet.replace("Hedef", "").replace("hedef", "").strip() for sheet in hedef_sayfalari]
@@ -203,107 +198,3 @@ if uploaded_file is not None:
                 is_gelme_orani_page = "gelme" in sheet.lower()
                 is_kriter_disi_page = "kriter" in sheet.lower()
                 is_ulasim_orani_page = "ulasim" in sheet.lower() or "ulaşım" in sheet.lower()
-                is_verimlilik_page = "verimlilik" in sheet.lower()
-                is_ozel_s = is_gelme_orani_page or is_kriter_disi_page or is_ulasim_orani_page or is_verimlilik_page
-                
-                # Sayfa kural filtre ataması
-                if is_gelme_orani_page: page_type = "gelme"
-                elif is_kriter_disi_page: page_type = "kriter"
-                elif is_ulasim_orani_page: page_type = "ulasim"
-                elif is_verimlilik_page: page_type = "verimlilik"
-                else: page_type = "standart"
-                
-                sutun_isimleri = [str(df_sheet.iloc[0, col_idx]).strip() for col_idx in range(df_sheet.shape[1])]
-                sutun_isimleri = [name if (name and name != 'nan') else f"Sütun {i}" for i, name in enumerate(sutun_isimleri)]
-                
-                kpi_tablo_rows = []
-                toplam_satir_data = None
-                
-                for r in range(1, df_sheet.shape[0]):
-                    t_isim = str(df_sheet.iloc[r, 0]).strip()
-                    t_isim_lower = tr_lower(t_isim)
-                    
-                    if not t_isim or t_isim == '' or t_isim_lower == 'nan': continue
-                        
-                    row_data = {}
-                    row_data[sutun_isimleri[0]] = t_isim
-                    
-                    for col_idx in range(1, df_sheet.shape[1]):
-                        raw_val = df_sheet.iloc[r, col_idx]
-                        row_data[sutun_isimleri[col_idx]] = clean_val(raw_val, is_ozel_s)
-                    
-                    if 'toplam' in t_isim_lower or 'genel' in t_isim_lower:
-                        row_data[sutun_isimleri[0]] = '🔴 Genel Toplam'
-                        formatted_toplam = {}
-                        for k, v in row_data.items():
-                            formatted_toplam[k] = v if k == sutun_isimleri[0] else format_val(v, k)
-                        toplam_satir_data = formatted_toplam
-                        continue
-                    
-                    if arama_filtresi == "" or arama_filtresi in t_isim_lower: kpi_tablo_rows.append(row_data)
-                
-                if len(kpi_tablo_rows) > 0:
-                    grafik_df = pd.DataFrame(kpi_tablo_rows).copy()
-                    
-                    formatted_rows = []
-                    for row in kpi_tablo_rows:
-                        f_row = {}
-                        for k, v in row.items():
-                            f_row[k] = v if k == sutun_isimleri[0] else format_val(v, k)
-                        formatted_rows.append(f_row)
-                        
-                    if toplam_satir_data and arama_filtresi == "": formatted_rows.append(toplam_satir_data)
-                        
-                    st.markdown(f"#### 📁 {tablo_basligi} Veri Seti")
-                    kpi_tablo_df = pd.DataFrame(formatted_rows)
-                    
-                    oran_sutunu = sutun_isimleri[-1] 
-                    try:
-                        styled_df = kpi_tablo_df.style.map(lambda x: dinamik_renk_kurali_hibrit(x, page_type), subset=[oran_sutunu])
-                        st.dataframe(styled_df, width="stretch", hide_index=True)
-                    except:
-                        st.dataframe(kpi_tablo_df, width="stretch", hide_index=True)
-                    
-                    y_ekseni = sutun_isimleri[1:-1] if ('oran' in sutun_isimleri[-1].lower() or '%' in sutun_isimleri[-1].lower()) else sutun_isimleri[1:]
-                    
-                    if not grafik_df.empty and len(y_ekseni) > 0:
-                        if page_type == "verimlilik":
-                            grafik_df['Grafik_Renk'] = grafik_df[oran_sutunu].apply(lambda x: 'Başarılı (>=%80)' if (x >= 0.80 or x >= 80.0) else 'Yetersiz (<%80)')
-                            color_map = {'Başarılı (>=%80)': '#10b981', 'Yetersiz (<%80)': '#ef4444'}
-                        elif page_type == "ulasim":
-                            grafik_df['Grafik_Renk'] = grafik_df[oran_sutunu].apply(lambda x: 'Başarılı (>=%70)' if (x >= 0.70 or x >= 70.0) else 'Yetersiz (<%70)')
-                            color_map = {'Başarılı (>=%70)': '#10b981', 'Yetersiz (<%70)': '#ef4444'}
-                        elif page_type == "kriter":
-                            grafik_df['Grafik_Renk'] = grafik_df[oran_sutunu].apply(lambda x: 'Başarılı (<=%20)' if (x <= 0.20 or x <= 20.0) else 'Yetersiz (>%20)')
-                            color_map = {'Başarılı (<=%20)': '#10b981', 'Yetersiz (>%20)': '#ef4444'}
-                        elif page_type == "gelme":
-                            grafik_df['Grafik_Renk'] = grafik_df[oran_sutunu].apply(lambda x: 'Başarılı (>=%40)' if (x >= 0.40 or x >= 40.0) else 'Yetersiz (<%40)')
-                            color_map = {'Başarılı (>=%40)': '#10b981', 'Yetersiz (<%40)': '#ef4444'}
-                        else:
-                            grafik_df['Grafik_Renk'] = grafik_df[oran_sutunu].apply(lambda x: 'Yüksek (>=%100)' if (x >= 1.0 or x >= 100.0) else ('Orta (%80-%99)' if (x >= 0.8 or x >= 80.0) else 'Düşük (<%80)'))
-                            color_map = {'Yüksek (>=%100)': '#10b981', 'Orta (%80-%99)' : '#fbbf24', 'Düşük (<%80)': '#ef4444'}
-                        
-                        fig = px.bar(
-                            grafik_df, 
-                            x=sutun_isimleri[0], 
-                            y=y_ekseni, 
-                            barmode='group', 
-                            template="plotly_dark", 
-                            height=300,
-                            color='Grafik_Renk',
-                            color_discrete_map=color_map
-                        )
-                        
-                        fig.update_layout(
-                            margin=dict(l=20, r=20, t=20, b=20),
-                            legend_title_text='Performans Durumu',
-                            paper_bgcolor='rgba(0,0,0,0)',
-                            plot_bgcolor='rgba(0,0,0,0)'
-                        )
-                        st.plotly_chart(fig, width="stretch", use_container_width=True)
-    else:
-        st.info("ℹ️ Temsilci hedeflerine ait detaylı alt sayfalar bulunamadı.")
-else:
-    st.markdown("---")
-    st.warning("⚠️ **GitHub Deponuzdaki Excel Dosyası Okunamadı!**")
-    st.info("💡 **Çözüm:** Bilgisayarınızdaki güncel Excel dosyasının adını küçük harflerle tamamen **`veri.xlsx`** yapın ve GitHub'a yükleyin. Sistem dosyayı algıladığı an paneliniz anında açılacaktır.")
