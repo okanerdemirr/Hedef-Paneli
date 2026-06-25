@@ -5,11 +5,11 @@ import plotly.express as px
 # requirements: streamlit, pandas, plotly, openpyxl
 
 st.set_page_config(
-    page_title="Temsilci Performans Paneli", 
+    page_title="Pano", 
     layout="wide"
 )
 
-# Premium modern tema CSS kodları ve PERFORMANS RENKLERİ entegrasyonu
+# Premium modern tema CSS kodları
 st.markdown("""
     <style>
         .main-title { font-size: 34px !important; font-weight: 800 !important; color: #ffffff; margin-bottom: 2px; letter-spacing: -0.5px; }
@@ -41,10 +41,6 @@ st.markdown("""
             color: #38bdf8 !important;
             border-bottom-color: #38bdf8 !important;
         }
-        /* PERFORMANS RENKLENDİRME CSS SINIFLARI */
-        .color-green { color: #10b981 !important; font-weight: 700 !important; } /* >= %100 */
-        .color-yellow { color: #fbbf24 !important; font-weight: 700 !important; } /* %80-%99 */
-        .color-red { color: #ef4444 !important; font-weight: 700 !important; } /* <= %79 */
     </style>
 """, unsafe_allow_html=True)
 
@@ -78,24 +74,6 @@ def clean_val(val):
     except: 
         return 0
 
-# Verilen renklendirme kurallarına göre CSS sınıfını döndüren fonksiyon
-def get_perf_class(val):
-    if val >= 1.0: # >= %100
-        return "color-green"
-    elif val >= 0.8: # %80 - %99
-        return "color-yellow"
-    else: # <= %79
-        return "color-red"
-
-# Ver Given renk koduna göre bar grafiği rengini döndüren fonksiyon
-def get_graph_color(val):
-    if val >= 1.0:
-        return "#10b981" # Yeşil
-    elif val >= 0.8:
-        return "#fbbf24" # Sarı
-    else:
-        return "#ef4444" # Kırmızı
-
 def format_val(val, col_name):
     c_lower = str(col_name).lower()
     if 'oran' in c_lower or '%' in c_lower or 'başarı' in c_lower:
@@ -120,6 +98,7 @@ def tr_lower(text):
 uploaded_file = None
 kaynak_baglantilar = [
     "https://raw.githubusercontent.com/okanerdemirr/Hedef-Paneli/main/veri.xlsx.xlsx",
+    "https://raw.githubusercontent.com/okanerdemirr/Hedef-Paneli/main/veri.xlsx",
     "https://raw.githubusercontent.com/okanerdemirr/Hedef-Paneli/main/veri"
 ]
 
@@ -152,63 +131,4 @@ if uploaded_file is not None:
             
             v1 = clean_val(df_g.iloc[r, 1])
             v2 = clean_val(df_g.iloc[r, 2])
-            v3 = clean_val(df_g.iloc[r, 3]) if df_g.shape[1] > 3 else 0
-            
-            oran_val = v3 if v3 > 0 else (v2 / v1 if v1 > 0 else 0)
-            
-            is_kpi = False
-            for kpi_word in ["lead", "rezervasyon", "hedef"]:
-                if kpi_word in h_adi:
-                    is_kpi = True
-            
-            if oran_val > 1 and not is_kpi:
-                oran_val = oran_val / 100
-
-            if "lead" in h_adi:
-                kpi_toplamlar["Lead"] = {"hedef": v1, "gerceklesen": v2, "oran_val": oran_val}
-            elif "gelen" in h_adi and "rezerv" in h_adi:
-                kpi_toplamlar["Gelen Rezervasyon"] = {"hedef": v1, "gerceklesen": v2, "oran_val": oran_val}
-            elif "sat" in h_adi:
-                kpi_toplamlar["Satış"] = {"hedef": v1, "gerceklesen": v2, "oran_val": oran_val}
-            elif "kriter" in h_adi:
-                kpi_toplamlar["Kriter Dışı"] = {"hedef": v1 if v1 <= 1 else v1/100, "gerceklesen": v2 / 100 if v2 > 1 else v2, "oran_val": v2/100 if v2 > 1 else v2}
-            elif "gelme" in h_adi:
-                kpi_toplamlar["Gelme Oranı"] = {"hedef": v1 if v1 <= 1 else v1/100, "gerceklesen": v2 / 100 if v2 > 1 else v2, "oran_val": v2/100 if v2 > 1 else v2}
-
-    st.markdown('<div class="section-title">⚡ Şirket Genel Performans Matrisi</div>', unsafe_allow_html=True)
-    ana_kpi_sirasi = ["Lead", "Gelen Rezervasyon", "Satış", "Kriter Dışı", "Gelme Oranı"]
-    cols = st.columns(len(ana_kpi_sirasi))
-    
-    for idx, name in enumerate(ana_kpi_sirasi):
-        with cols[idx]:
-            st.markdown('<div class="card-title">💎 {}</div>'.format(name), unsafe_allow_html=True)
-            h_data = kpi_toplamlar[name]["hedef"]
-            g_data = kpi_toplamlar[name]["gerceklesen"]
-            o_data = kpi_toplamlar[name]["oran_val"]
-            
-            if name in ["Gelme Oranı", "Kriter Dışı"]:
-                h_str = "Hedef: {:.1%}".format(h_data) if h_data <= 1 else "Hedef: {:.1f}%".format(h_data)
-                g_str = "{:.1%}".format(g_data) if g_data <= 1 else "{:.1f}%".format(g_data)
-                st.markdown('<div style="color:#94a3b8; font-size:13px; margin-bottom:5px;">{}</div>'.format(h_str), unsafe_allow_html=True)
-                st.metric(label="", value=g_str, delta="Gerçekleşen", delta_color="normal")
-            else:
-                h_str = "Hedef: {:,}".format(int(h_data))
-                g_str = "{:,}".format(int(g_data))
-                st.markdown('<div style="color:#94a3b8; font-size:13px; margin-bottom:5px;">{}</div>'.format(h_str), unsafe_allow_html=True)
-                
-                # Tepedeki metrik kutusundaki başarı yüzdesine de performans renklerini entegre et:
-                perf_class = get_perf_class(o_data)
-                success_str = '<span class="{}">{:.1%}</span>'.format(perf_class, o_data)
-                st.metric(label="", value=g_str, delta="Başarı: {:.1%}".format(o_data), delta_color="normal")
-
-    st.markdown('<hr style="border-top: 1px solid #334155; margin-top:30px; margin-bottom:20px;">', unsafe_allow_html=True)
-    st.markdown('<div class="section-title">👥 Temsilci Performans Kırılımları</div>', unsafe_allow_html=True)
-
-    hedef_sayfalari = [s for s in all_sheets if ("hedef" in s.lower() or "analiz" in s.lower() or "ulasim" in s.lower() or "ulaşım" in s.lower()) and "genel" not in s.lower()]
-    
-    if hedef_sayfalari:
-        sekme_isimleri = [sheet.replace("Hedef", "").replace("hedef", "").strip() for sheet in hedef_sayfalari]
-        sekmeler = st.tabs(sekme_isimleri)
-        
-        for idx, sheet in enumerate(hedef_sayfalari):
-            with sekmeler[idx
+            v3 = clean_val(df_g.iloc[r, 3]) if df_g.shape[1]
