@@ -77,7 +77,6 @@ def clean_val(val):
 def format_val(val, col_name):
     c_lower = str(col_name).lower()
     if 'oran' in c_lower or '%' in c_lower or 'başarı' in c_lower:
-        # Gelen verinin ölçeğini kontrol edip akıllı yüzde formatlama yapar
         v_show = val if val <= 5.0 else val / 100.0
         return "{:.1%}".format(v_show)
     if isinstance(val, (int, float)):
@@ -93,8 +92,8 @@ def tr_lower(text):
     text = text.replace("İ", "i").replace("I", "ı").replace("Ş", "ş").replace("Ğ", "ğ").replace("Ü", "ü").replace("Ç", "ç")
     return text.lower()
 
-# Tablo hücrelerini kurallara göre (Yeşil, Sarı, Kırmızı) renklendiren fonksiyon
-def renk_kurali(val):
+# Sayfa adına göre akıllı dinamik renklendirme fonksiyonu
+def dinamik_renk_kurali(val, is_kriter_disi=False):
     try:
         if isinstance(val, str) and '%' in val:
             v = float(val.replace('%', '').replace(',', '.')) / 100
@@ -103,12 +102,20 @@ def renk_kurali(val):
             if v > 5.0:
                 v = v / 100.0
         
-        if v >= 1.0:
-            return 'color: #10b981; font-weight: bold;' # >= %100 Yeşil
-        elif v >= 0.8:
-            return 'color: #fbbf24; font-weight: bold;' # %80 - %99 Sarı
+        if is_kriter_disi:
+            # Sadece Kriter Dışı tablosu için özel kural: %40 ve üzeri Yeşil, %39 ve altı Kırmızı
+            if v >= 0.40:
+                return 'color: #10b981; font-weight: bold;'
+            else:
+                return 'color: #ef4444; font-weight: bold;'
         else:
-            return 'color: #ef4444; font-weight: bold;' # <= %79 Kırmızı
+            # Diğer tüm tablolar için orijinal standart kuralınız
+            if v >= 1.0:
+                return 'color: #10b981; font-weight: bold;'
+            elif v >= 0.8:
+                return 'color: #fbbf24; font-weight: bold;'
+            else:
+                return 'color: #ef4444; font-weight: bold;'
     except:
         return ''
 
@@ -207,6 +214,8 @@ if uploaded_file is not None:
                     continue
                     
                 tablo_basligi = sekme_isimleri[idx]
+                is_kriter_disi_page = "kriter" in sheet.lower() # Sayfa kontrolü yapılıyor
+                
                 sutun_isimleri = [str(df_sheet.iloc[0, col_idx]).strip() for col_idx in range(df_sheet.shape[1])]
                 sutun_isimleri = [name if (name and name != 'nan') else "Sütun {}".format(i) for i, name in enumerate(sutun_isimleri)]
                 
@@ -261,10 +270,10 @@ if uploaded_file is not None:
                     st.markdown("#### 📁 {} Veri Seti".format(tablo_basligi))
                     kpi_tablo_df = pd.DataFrame(formatted_rows)
                     
-                    # 🔴 GÜVENLİ PANDAS STYLER RENKLENDİRME MOTORU
+                    # 🔴 GÜVENLİ PANDAS STYLER RENKLENDİRME MOTORU (Sayfa türüne göre kuralı dinamik iletir)
                     oran_sutunu = sutun_isimleri[-1] 
                     try:
-                        styled_df = kpi_tablo_df.style.map(renk_kurali, subset=[oran_sutunu])
+                        styled_df = kpi_tablo_df.style.map(lambda x: dinamik_renk_kurali(x, is_kriter_disi_page), subset=[oran_sutunu])
                         st.dataframe(styled_df, width="stretch", hide_index=True)
                     except:
                         st.dataframe(kpi_tablo_df, width="stretch", hide_index=True)
@@ -272,10 +281,17 @@ if uploaded_file is not None:
                     y_ekseni = sutun_isimleri[1:-1] if ('oran' in sutun_isimleri[-1].lower() or '%' in sutun_isimleri[-1].lower()) else sutun_isimleri[1:]
                     
                     if not grafik_df.empty and len(y_ekseni) > 0:
-                        # Grafik barlarının rengini temsilcinin ölçeklenmiş başarı oranına göre grupluyoruz
-                        grafik_df['Grafik_Renk'] = grafik_df[sutun_isimleri[-1]].apply(
-                            lambda x: 'Yüksek (>=%100)' if (x >= 1.0 or (x > 5.0 and x >= 100.0)) else ('Orta (%80-%99)' if (x >= 0.8 or (x > 5.0 and x >= 80.0)) else 'Düşük (<%80)')
-                        )
+                        # Grafik barlarının rengi de sayfa türüne göre filtrelenir
+                        if is_kriter_disi_page:
+                            grafik_df['Grafik_Renk'] = grafik_df[sutun_isimleri[-1]].apply(
+                                lambda x: 'Yüksek (>=%40)' if (x >= 0.40 or (x > 5.0 and x >= 40.0)) else 'Düşük (<%40)'
+                            )
+                            color_map = {'Yüksek (>=%40)': '#10b981', 'Düşük (<%40)': '#ef4444'}
+                        else:
+                            grafik_df['Grafik_Renk'] = grafik_df[sutun_isimleri[-1]].apply(
+                                lambda x: 'Yüksek (>=%100)' if (x >= 1.0 or (x > 5.0 and x >= 100.0)) else ('Orta (%80-%99)' if (x >= 0.8 or (x > 5.0 and x >= 80.0)) else 'Düşük (<%80)')
+                            )
+                            color_map = {'Yüksek (>=%100)': '#10b981', 'Orta (%80-%99)': '#fbbf24', 'Düşük (<%80)': '#ef4444'}
                         
                         fig = px.bar(
                             grafik_df, 
@@ -285,11 +301,7 @@ if uploaded_file is not None:
                             template="plotly_dark", 
                             height=300,
                             color='Grafik_Renk',
-                            color_discrete_map={
-                                'Yüksek (>=%100)': '#10b981', # Canlı Yeşil
-                                'Orta (%80-%99)': '#fbbf24',  # Canlı Sarı
-                                'Düşük (<%80)': '#ef4444'     # Canlı Kırmızı
-                            }
+                            color_discrete_map=color_map
                         )
                         
                         fig.update_layout(
