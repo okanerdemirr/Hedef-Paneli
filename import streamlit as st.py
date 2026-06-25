@@ -94,6 +94,23 @@ def tr_lower(text):
     text = text.replace("İ", "i").replace("I", "ı").replace("Ş", "ş").replace("Ğ", "ğ").replace("Ü", "ü").replace("Ç", "ç")
     return text.lower()
 
+# Tablo hücrelerini kurallara göre (Yeşil, Sarı, Kırmızı) renklendiren kararlı fonksiyon
+def renk_kurali(val):
+    try:
+        if isinstance(val, str) and '%' in val:
+            v = float(val.replace('%', '').replace(',', '.')) / 100
+        else:
+            v = float(val)
+        
+        if v >= 1.0:
+            return 'color: #10b981; font-weight: bold;' # >= %100 Yeşil
+        elif v >= 0.8:
+            return 'color: #fbbf24; font-weight: bold;' # %80 - %99 Sarı
+        else:
+            return 'color: #ef4444; font-weight: bold;' # <= %79 Kırmızı
+    except:
+        return ''
+
 # --- OTOMATİK ARKA PLAN DOSYA MOTORU ---
 uploaded_file = None
 kaynak_baglantilar = [
@@ -104,8 +121,9 @@ kaynak_baglantilar = [
 
 for url in kaynak_baglantilar:
     try:
-        uploaded_file = pd.ExcelFile(url)
-        if uploaded_file is not None:
+        f_excel = pd.ExcelFile(url)
+        if f_excel is not None:
+            uploaded_file = f_excel
             break
     except:
         continue
@@ -242,11 +260,22 @@ if uploaded_file is not None:
                     st.markdown("#### 📁 {} Veri Seti".format(tablo_basligi))
                     kpi_tablo_df = pd.DataFrame(formatted_rows)
                     
-                    st.dataframe(kpi_tablo_df, width="stretch", hide_index=True)
+                    # 🔴 GÜVENLİ PANDAS STYLER RENKLENDİRME MOTORU
+                    oran_sutunu = sutun_isimleri[-1] 
+                    try:
+                        styled_df = kpi_tablo_df.style.map(renk_kurali, subset=[oran_sutunu])
+                        st.dataframe(styled_df, width="stretch", hide_index=True)
+                    except:
+                        st.dataframe(kpi_tablo_df, width="stretch", hide_index=True)
                     
                     y_ekseni = sutun_isimleri[1:-1] if ('oran' in sutun_isimleri[-1].lower() or '%' in sutun_isimleri[-1].lower()) else sutun_isimleri[1:]
                     
                     if not grafik_df.empty and len(y_ekseni) > 0:
+                        # Grafik barlarının rengini temsilcinin başarı oranına göre grupluyoruz
+                        grafik_df['Grafik_Renk'] = grafik_df[sutun_isimleri[-1]].apply(
+                            lambda x: 'Yüksek (>=%100)' if x >= 1.0 else ('Orta (%80-%99)' if x >= 0.8 else 'Düşük (<%80)')
+                        )
+                        
                         fig = px.bar(
                             grafik_df, 
                             x=sutun_isimleri[0], 
@@ -254,12 +283,17 @@ if uploaded_file is not None:
                             barmode='group', 
                             template="plotly_dark", 
                             height=300,
-                            color_discrete_sequence=["#475569", "#38bdf8", "#0284c7", "#f1f5f9"]
+                            color='Grafik_Renk',
+                            color_discrete_map={
+                                'Yüksek (>=%100)': '#10b981', # Canlı Yeşil
+                                'Orta (%80-%99)': '#fbbf24',  # Canlı Sarı
+                                'Düşük (<%80)': '#ef4444'     # Canlı Kırmızı
+                            }
                         )
                         
                         fig.update_layout(
                             margin=dict(l=20, r=20, t=20, b=20),
-                            legend_title_text='',
+                            legend_title_text='Performans Durumu',
                             paper_bgcolor='rgba(0,0,0,0)',
                             plot_bgcolor='rgba(0,0,0,0)'
                         )
@@ -268,7 +302,6 @@ if uploaded_file is not None:
     else:
         st.info("ℹ️ Temsilci hedeflerine ait detaylı alt sayfalar bulunamadı.")
 else:
-    # Sayfanın sonsuza kadar donmasını engelleyen akıllı uyarı mesajı:
     st.markdown("---")
     st.warning("⚠️ **GitHub Deponuzdaki Excel Dosyası Okunamadı!**")
     st.info("💡 **Çözüm:** Bilgisayarınızdaki güncel Excel dosyasının adını küçük harflerle tamamen **`veri.xlsx`** yapın ve GitHub'a yükleyin. Sistem dosyayı algıladığı an paneliniz anında açılacaktır.")
