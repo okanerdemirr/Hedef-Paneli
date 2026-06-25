@@ -77,6 +77,7 @@ def clean_val(val):
 def format_val(val, col_name):
     c_lower = str(col_name).lower()
     if 'oran' in c_lower or '%' in c_lower or 'başarı' in c_lower:
+        # Gelen verinin ölçeğini kontrol edip akıllı yüzde formatlama yapar
         v_show = val if val <= 5.0 else val / 100.0
         return "{:.1%}".format(v_show)
     if isinstance(val, (int, float)):
@@ -92,7 +93,7 @@ def tr_lower(text):
     text = text.replace("İ", "i").replace("I", "ı").replace("Ş", "ş").replace("Ğ", "ğ").replace("Ü", "ü").replace("Ç", "ç")
     return text.lower()
 
-# Yeni Kural: %40 ve üzeri Yeşil, %39 ve altı Kırmızı renklendirme fonksiyonu
+# Tablo hücrelerini kurallara göre (Yeşil, Sarı, Kırmızı) renklendiren fonksiyon
 def renk_kurali(val):
     try:
         if isinstance(val, str) and '%' in val:
@@ -102,10 +103,12 @@ def renk_kurali(val):
             if v > 5.0:
                 v = v / 100.0
         
-        if v >= 0.40:
-            return 'color: #10b981; font-weight: bold;' # >= %40 Yeşil
+        if v >= 1.0:
+            return 'color: #10b981; font-weight: bold;' # >= %100 Yeşil
+        elif v >= 0.8:
+            return 'color: #fbbf24; font-weight: bold;' # %80 - %99 Sarı
         else:
-            return 'color: #ef4444; font-weight: bold;' # <= %39 Kırmızı
+            return 'color: #ef4444; font-weight: bold;' # <= %79 Kırmızı
     except:
         return ''
 
@@ -269,9 +272,9 @@ if uploaded_file is not None:
                     y_ekseni = sutun_isimleri[1:-1] if ('oran' in sutun_isimleri[-1].lower() or '%' in sutun_isimleri[-1].lower()) else sutun_isimleri[1:]
                     
                     if not grafik_df.empty and len(y_ekseni) > 0:
-                        # Grafik renk grupları da yeni %40 limitine göre güncellendi
+                        # Grafik barlarının rengini temsilcinin ölçeklenmiş başarı oranına göre grupluyoruz
                         grafik_df['Grafik_Renk'] = grafik_df[sutun_isimleri[-1]].apply(
-                            lambda x: 'Yüksek (>=%40)' if (x >= 0.40 or (x > 5.0 and x >= 40.0)) else 'Düşük (<%40)'
+                            lambda x: 'Yüksek (>=%100)' if (x >= 1.0 or (x > 5.0 and x >= 100.0)) else ('Orta (%80-%99)' if (x >= 0.8 or (x > 5.0 and x >= 80.0)) else 'Düşük (<%80)')
                         )
                         
                         fig = px.bar(
@@ -283,8 +286,9 @@ if uploaded_file is not None:
                             height=300,
                             color='Grafik_Renk',
                             color_discrete_map={
-                                'Yüksek (>=%40)': '#10b981', # Canlı Yeşil
-                                'Düşük (<%40)': '#ef4444'     # Canlı Kırmızı
+                                'Yüksek (>=%100)': '#10b981', # Canlı Yeşil
+                                'Orta (%80-%99)': '#fbbf24',  # Canlı Sarı
+                                'Düşük (<%80)': '#ef4444'     # Canlı Kırmızı
                             }
                         )
                         
