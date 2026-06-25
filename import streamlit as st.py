@@ -81,7 +81,4 @@ def format_val(val, col_name):
 def tr_lower(text):
     if not text: return ""
     text = str(text).strip()
-    text = text.replace("İ", "i").replace("I", "ı").replace("Ş", "ş").replace("Ğ", "ğ").replace("Ü", "ü").replace("Ç", "ç")
-    return text.lower()
-
-def dinamik_renk_kurali_hibrit(val, page_type="standart
+    text = text.replace("İ", "i").replace("I", "ı").replace("Ş", "ş").replace("Ğ", "ğ").replace("Ü
