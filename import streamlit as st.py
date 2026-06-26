@@ -64,14 +64,34 @@ def clean_val(val):
         return int(v_str)
     except: return 0
 
+# Kırpılmayı önlemek adına string formatlama satırları kısaltıldı ve bölündü
 def format_val(val, col_name, is_gelme_orani=False):
     c_lower = str(col_name).lower()
-    if 'oran' in c_lower or '%' in c_lower or 'başarı' in c_lower or 'verimlilik' in c_lower or 'ortalama' in c_lower:
-        if is_gelme_orani:
-            v_show = val if val > 5.0 else val * 100.0
-            return "{:.1f}%".format(v_show)
-        v_show = val if val <= 5.0 else val / 100.0
-        return "{:.1%}".format(v_show)
+    is_percent_col = (
+        'oran' in c_lower or 
+        '%' in c_lower or 
+        'başarı' in c_lower or 
+        'verimlilik' in c_lower or 
+        'ortalama' in c_lower
+    )
+    if is_percent_col:
+        v_show = val if is_gelme_orani else (val if val <= 5.0 else val / 100.0)
+        if is_gelme_orani and v_show <= 5.0:
+            v_show = v_show * 100.0
+        return f"{v_show:.1%}" if not is_gelme_orani else f"{v_show:.1f}%"
+        
     if isinstance(val, (int, float)):
-        if val == int(val): return "{:,}".format(int(val))
-        return "{:,.2f}".format(val
+        if val == int(val): 
+            return f"{int(val):,}"
+        return f"{val:,.2f}"
+    return str(val)
+
+def tr_lower(text):
+    if not text: return ""
+    text = str(text).strip()
+    text = text.replace("İ", "i").replace("I", "ı").replace("Ş", "ş").replace("Ğ", "ğ").replace("Ü", "ü").replace("Ç", "ç")
+    return text.lower()
+
+def dinamik_renk_kurali_hibrit(val, page_type="standart"):
+    try:
+        if isinstance(val, str) and '%'
