@@ -6,7 +6,7 @@ import plotly.express as px
 
 st.set_page_config(page_title="Pano", layout="wide")
 
-# Sağa taşmayı ve kırpılmayı önlemek amacıyla tüm CSS blokları alt alta küçük parçalara bölündü
+# Tüm CSS blokları kırpılmayı önlemek amacıyla alt alta küçük parçalara bölündü
 css = '<style>'
 css += '.main-title {'
 css += ' font-size: 40px !important;'
@@ -33,19 +33,42 @@ css += ' border-left: 6px solid #ff007f;'
 css += ' padding-left: 15px;'
 css += ' text-shadow: 0 0 10px rgba(0, 229, 255, 0.2);'
 css += '}'
-# El yapımı gösterişli neon kutuların CSS sınıfları
+# Üst matris el yapımı neon kutuların CSS sınıfları
 css += '.neon-box {'
 css += ' background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);'
 css += ' padding: 20px; border-radius: 16px; margin-bottom: 15px;'
 css += ' transition: all 0.3s ease; text-align: left;'
 css += '}'
 css += '.neon-box:hover { transform: translateY(-3px); }'
-css += '.box-title { font-size: 13px; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase; margin-bottom: 4px; }'
-css += '.box-target { font-size: 12px; color: #94a3b8; margin-bottom: 12px; }'
-css += '.box-value { font-size: 32px; font-weight: 800; color: #ffffff; margin-bottom: 10px; line-height: 1; }'
-css += '.box-badge { display: inline-block; padding: 4px 10px; border-radius: 6px; font-size: 13px; font-weight: 700; background: rgba(16, 185, 129, 0.15); color: #10b981; }'
-css += 'button[data-baseweb="tab"] { font-size: 18px !important; font-weight: 700 !important; color: #94a3b8 !important; padding: 12px 24px !important; }'
-css += 'button[data-baseweb="tab"][aria-selected="true"] { color: #ff007f !important; border-bottom-color: #ff007f !important; background-color: rgba(255, 0, 127, 0.05) !important; }'
+css += '.box-title { font-size: 13px; font-weight: 800; letter-spacing: 1.5px; margin-bottom: 12px; }'
+css += 'div[data-testid="stMetricLabel"] { display: none !important; }'
+css += 'div[data-testid="stMetricValue"] { font-size: 32px !important; font-weight: 800 !important; color: #ffffff !important; }'
+css += 'div[data-testid="stMetricDelta"] > div { background-color: rgba(16, 185, 129, 0.2) !important; color: #10b981 !important; padding: 4px 10px !important; border-radius: 6px !important; font-weight: 700 !important; font-size: 15px !important; }'
+# Alt sekmeler (Tabs) için özel parıltılı ve neon çerçeve tasarımları
+css += 'button[data-baseweb="tab"] {'
+css += ' font-size: 16px !important; font-weight: 700 !important;'
+css += ' color: #94a3b8 !important; padding: 12px 20px !important;'
+css += ' background: #1e293b !important; border: 2px solid #334155 !important;'
+css += ' border-radius: 10px !important; margin-right: 8px !important;'
+css += ' transition: all 0.3s ease !important;'
+css += '}'
+css += 'button[data-baseweb="tab"]:hover {'
+css += ' border-color: #00e5ff !important;'
+css += ' box-shadow: 0 0 10px rgba(0, 229, 255, 0.15) !important;'
+css += '}'
+css += 'button[data-baseweb="tab"][aria-selected="true"] {'
+css += ' color: #ffffff !important;'
+css += ' border-color: #ff007f !important;'
+css += ' background: linear-gradient(135deg, #2d122b 0%, #1e293b 100%) !important;'
+css += ' box-shadow: 0 0 15px rgba(255, 0, 127, 0.3) !important;'
+css += '}'
+css += 'div[data-testid="stTab"] {'
+css += ' background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%) !important;'
+css += ' border: 2px solid #ff007f !important;'
+css += ' padding: 25px !important; border-radius: 16px !important;'
+css += ' box-shadow: 0 0 20px rgba(255, 0, 127, 0.15) !important;'
+css += ' margin-top: 15px !important;'
+css += '}'
 css += '</style>'
 st.markdown(css, unsafe_allow_html=True)
 
@@ -104,26 +127,20 @@ def dinamik_renk_kurali_hibrit(val, page_type="standart"):
             v = float(val.replace('%', '').replace(',', '.')) / 100
         else:
             v = float(val)
-            if v > 5.0: 
-                v = v / 100.0
+            if v > 5.0: v = v / 100.0
         
         if page_type == "verimlilik":
-            if v >= 0.80:
-                return 'color: #10b981; font-weight: bold;'
+            if v >= 0.80: return 'color: #10b981; font-weight: bold;'
             return 'color: #ff007f; font-weight: bold;'
         elif page_type == "kriter":
-            if v <= 0.20:
-                return 'color: #10b981; font-weight: bold;'
+            if v <= 0.20: return 'color: #10b981; font-weight: bold;'
             return 'color: #ff007f; font-weight: bold;'
         elif page_type == "gelme":
-            if v >= 0.40:
-                return 'color: #10b981; font-weight: bold;'
+            if v >= 0.40: return 'color: #10b981; font-weight: bold;'
             return 'color: #ff007f; font-weight: bold;'
         else:
-            if v >= 1.0:
-                return 'color: #10b981; font-weight: bold;'
-            if v >= 0.8:
-                return 'color: #ffeb3b; font-weight: bold;'
+            if v >= 1.0: return 'color: #10b981; font-weight: bold;'
+            if v >= 0.8: return 'color: #ffeb3b; font-weight: bold;'
             return 'color: #ff007f; font-weight: bold;'
     except: return ''
 
@@ -188,7 +205,6 @@ if uploaded_file is not None:
     st.markdown('<div class="section-title">⚡ Şirket Genel Performans Matrisi</div>', unsafe_allow_html=True)
     cols = st.columns(5)
     
-    # 1. Lead Kutusu (Neon Pembe)
     with cols[0]:
         h_str = "Hedef: {:,}".format(int(kpi_toplamlar["Lead"]["hedef"]))
         g_str = "{:,}".format(int(kpi_toplamlar["Lead"]["gerceklesen"]))
@@ -200,7 +216,6 @@ if uploaded_file is not None:
         html += f'<div class="box-badge">{b_str}</div></div>'
         st.markdown(html, unsafe_allow_html=True)
 
-    # 2. Gelen Rezervasyon Kutusu (Elektrik Mavisi)
     with cols[1]:
         h_str = "Hedef: {:,}".format(int(kpi_toplamlar["Gelen Rezervasyon"]["hedef"]))
         g_str = "{:,}".format(int(kpi_toplamlar["Gelen Rezervasyon"]["gerceklesen"]))
@@ -212,7 +227,6 @@ if uploaded_file is not None:
         html += f'<div class="box-badge">{b_str}</div></div>'
         st.markdown(html, unsafe_allow_html=True)
 
-    # 3. Satış Kutusu (Parlak Sarı)
     with cols[2]:
         h_str = "Hedef: {:,}".format(int(kpi_toplamlar["Satış"]["hedef"]))
         g_str = "{:,}".format(int(kpi_toplamlar["Satış"]["gerceklesen"]))
@@ -224,7 +238,6 @@ if uploaded_file is not None:
         html += f'<div class="box-badge">{b_str}</div></div>'
         st.markdown(html, unsafe_allow_html=True)
 
-    # 4. Kriter Dışı Kutusu (Neon Mor)
     with cols[3]:
         h_data = kpi_toplamlar["Kriter Dışı"]["hedef"]
         g_data = kpi_toplamlar["Kriter Dışı"]["gerceklesen"]
@@ -237,7 +250,6 @@ if uploaded_file is not None:
         html += f'<div class="box-badge">Gerçekleşen</div></div>'
         st.markdown(html, unsafe_allow_html=True)
 
-    # 5. Gelme Oranı Kutusu (Neon Turuncu)
     with cols[4]:
         h_data = kpi_toplamlar["Gelme Oranı"]["hedef"]
         g_data = kpi_toplamlar["Gelme Oranı"]["gerceklesen"]
