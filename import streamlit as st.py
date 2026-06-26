@@ -6,7 +6,7 @@ import plotly.express as px
 
 st.set_page_config(page_title="Pano", layout="wide")
 
-# Gösterişli Renk Dolu CSS Kodları Kesilmeyi Önleyecek Şekilde Parçalandı
+# Premium ve Gösterişli Renk Dolu CSS Kodları Kesilmeyi Önleyecek Şekilde Yapılandırıldı
 st.markdown("""
     <style>
         .main-title { 
@@ -72,20 +72,4 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-st.markdown('<div class="main-title">📊 Temsilci Performans Kontrol Paneli</div>', unsafe_allow_html=True)
-st.markdown('<div class="subtitle">Şirket genel hedefleri ve dinamik temsilci performans matrisi</div>', unsafe_allow_html=True)
-
-st.sidebar.markdown("### ⚙️ Veri Kontrol Paneli")
-arama_filtresi = st.sidebar.text_input("👤 Temsilci Ara (Dinamik)", "").strip().lower()
-
-if st.sidebar.button("🔄 Verileri Yenile / Sıfırla"):
-    st.cache_data.clear()
-    st.rerun()
-
-def clean_val(val):
-    if pd.isna(val): return 0
-    v_str = str(val).strip()
-    if v_str in ['None', 'nan', '-', '']: return 0
-    if '%' in v_str:
-        v_str = v_str.replace('%', '').replace(',', '.')
-        try: return float(v_str) / 10
+st.markdown('<div class="main-title">📊 Temsilci Performans Kontrol Pan
