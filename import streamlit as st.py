@@ -100,7 +100,6 @@ def format_val(val, col_name, is_gelme_orani=False):
         'ortalama' in c_lower
     )
     if is_oran_col:
-        # Lokman Tan'ın Excel'deki 1 ile 5 arasındaki ham düz sayı format hatasını çözen akıllı filtre
         if 1.0 < val <= 5.0 and not is_gelme_orani:
             val = val / 100.0
             
@@ -126,7 +125,6 @@ def dinamik_renk_kurali_hibrit(val, page_type="standart"):
             v = float(val.replace('%', '').replace(',', '.')) / 100
         else:
             v = float(val)
-            # Lokman Tan'ın tablodaki renklendirme motorunu düzelten filtre
             if 1.0 < v <= 5.0:
                 v = v / 100.0
             elif v > 5.0:
@@ -290,19 +288,19 @@ if uploaded_file is not None:
                     for k, v in row.items():
                         if k == sutun_isimleri[0]: f_row[k] = v
                         else: 
-                            # Lokman Tan'ın tablodaki hücre verisini düzelten filtre
-                            if k == oran_sutunu and 1.0 < v <= 5.0:
+                            # NameError'ı çözmek adına doğrudan sütun isimleri listesindeki son eleman baz alındı
+                            if k == sutun_isimleri[-1] and 1.0 < v <= 5.0:
                                 v = v / 100.0
                             f_row[k] = format_val(v, k, is_gelme_orani_page)
                     formatted_rows.append(f_row)
                     
                 if toplam_satir_data and arama_filtresi == "": formatted_rows.append(toplam_satir_data)
                     
+                oran_sutunu = sutun_isimleri[-1]
                 if len(formatted_rows) > 0 and not (len(formatted_rows) == 1 and formatted_rows[0][sutun_isimleri[0]] == '🔴 Genel Toplam'):
                     st.markdown("#### 📁 {} Veri Seti".format(tablo_basligi))
                     kpi_tablo_df = pd.DataFrame(formatted_rows)
                     
-                    oran_sutunu = sutun_isimleri[-1] 
                     try:
                         styled_df = kpi_tablo_df.style.map(lambda x: dinamik_renk_kurali_hibrit(x, current_page_type), subset=[oran_sutunu])
                         st.dataframe(styled_df, width="stretch", hide_index=True)
@@ -316,7 +314,6 @@ if uploaded_file is not None:
                     
                     if not grafik_df.empty and len(y_ekseni) > 0:
                         def get_bar_label(x, p_type):
-                            # Grafik verisi düzeltmesi
                             if x > 5.0: x = x / 100.0
                             if p_type == "kriter":
                                 return 'Başarılı (<=%20)' if (x <= 0.20) else 'Yetersiz (>%20)'
