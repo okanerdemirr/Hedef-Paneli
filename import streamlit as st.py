@@ -66,7 +66,15 @@ def clean_val(val):
 
 def format_val(val, col_name, is_gelme_orani=False):
     c_lower = str(col_name).lower()
-    if 'oran' in c_lower or '%' in c_lower or 'başarı' in c_lower or 'verimlilik' in c_lower:
+    # Kırpılmayı önlemek amacıyla "ortalama" koşulu alt satıra bölünerek eklendi
+    is_oran_col = (
+        'oran' in c_lower or 
+        '%' in c_lower or 
+        'başarı' in c_lower or 
+        'verimlilik' in c_lower or 
+        'ortalama' in c_lower
+    )
+    if is_oran_col:
         if is_gelme_orani:
             v_show = val if val > 5.0 else val * 100.0
             return "{:.1f}%".format(v_show)
@@ -260,7 +268,7 @@ if uploaded_file is not None:
                     except:
                         st.dataframe(kpi_tablo_df, width="stretch", hide_index=True)
                     
-                    y_ekseni = sutun_isimleri[1:-1] if ('oran' in sutun_isimleri[-1].lower() or '%' in sutun_isimleri[-1].lower() or 'verimlilik' in sutun_isimleri[-1].lower()) else sutun_isimleri[1:]
+                    y_ekseni = sutun_isimleri[1:-1] if ('oran' in sutun_isimleri[-1].lower() or '%' in sutun_isimleri[-1].lower() or 'verimlilik' in sutun_isimleri[-1].lower() or 'ortalama' in sutun_isimleri[-1].lower()) else sutun_isimleri[1:]
                     
                     if not grafik_df.empty and len(y_ekseni) > 0:
                         if current_page_type == "kriter":
@@ -298,6 +306,3 @@ if uploaded_file is not None:
     else:
         st.info("ℹ️ Temsilci hedeflerine ait detaylı alt sayfalar bulunamadı.")
 else:
-    st.markdown("---")
-    st.warning("⚠️ **GitHub Deponuzdaki Excel Dosyası Okunamadı!**")
-    st.info("💡 **Çözüm:** Bilgisayarınızdaki güncel Excel dosyasının adını küçük harflerle tamamen **`veri.xlsx`** yapın ve GitHub'a yükleyin. Sistem dosyayı algıladığı an paneliniz anında açılacaktır.")
