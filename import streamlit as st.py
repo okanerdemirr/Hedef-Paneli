@@ -6,24 +6,7 @@ import plotly.express as px
 
 st.set_page_config(page_title="Pano", layout="wide")
 
-# Premium modern tema CSS kodları
-st.markdown("""
-    <style>
-        .main-title { font-size: 34px !important; font-weight: 800 !important; color: #ffffff; margin-bottom: 2px; letter-spacing: -0.5px; }
-        .subtitle { font-size: 14px !important; color: #94a3b8; margin-bottom: 25px; }
-        .section-title { font-size: 22px !important; font-weight: 700 !important; color: #38bdf8; margin-top: 30px; margin-bottom: 18px; border-left: 5px solid #38bdf8; padding-left: 12px; }
-        div[data-testid="column"] {
-            background-color: #1e293b !important;
-            border: 1px solid #334155 !important;
-            padding: 20px !important;
-            border-radius: 12px !important;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
-        }
-        .card-title { font-size: 14px !important; font-weight: 700 !important; color: #38bdf8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
-        div[data-testid="stMetricLabel"] { display: none !important; }
-        div[data-testid="stMetricValue"] { font-size: 28px !important; font-weight: 700 !important; color: #ffffff !important; }
-        div[data-testid="stMetricDelta"] > div {
-            background-color: rgba(16, 185, 129, 0.15) !important;
-            color: #10b981 !important;
-            padding: 4px 10px !important;
-            border-radius:
+# CSS kodları kesilmeyi önlemek adına tek satır formuna getirildi
+st.markdown("<style>.main-title { font-size: 34px !important; font-weight: 800 !important; color: #ffffff; margin-bottom: 2px; letter-spacing: -0.5px; } .subtitle { font-size: 14px !important; color: #94a3b8; margin-bottom: 25px; } .section-title { font-size: 22px !important; font-weight: 700 !important; color: #38bdf8; margin-top: 30px; margin-bottom: 18px; border-left: 5px solid #38bdf8; padding-left: 12px; } div[data-testid='column'] { background-color: #1e293b !important; border: 1px solid #334155 !important; padding: 20px !important; border-radius: 12px !important; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important; } .card-title { font-size: 14px !important; font-weight: 700 !important; color: #38bdf8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; } div[data-testid='stMetricLabel'] { display: none !important; } div[data-testid='stMetricValue'] { font-size: 28px !important; font-weight: 700 !important; color: #ffffff !important; } div[data-testid='stMetricDelta'] > div { background-color: rgba(16, 185, 129, 0.15) !important; color: #10b981 !important; padding: 4px 10px !important; border-radius: 6px !important; font-weight: 600 !important; } button[data-baseweb='tab'] { font-size: 16px !important; font-weight: 600 !important; color: #94a3b8 !important; } button[data-baseweb='tab'][aria-selected='true'] { color: #38bdf8 !important; border-bottom-color: #38bdf8 !important; }</style>", unsafe_allow_html=True)
+
+st.markdown('<div class="main-
