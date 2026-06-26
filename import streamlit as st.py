@@ -6,12 +6,30 @@ import plotly.express as px
 
 st.set_page_config(page_title="Pano", layout="wide")
 
-# Premium ve Gösterişli Renk Dolu CSS Kodları
+# Gösterişli Renk Dolu CSS Kodları Kesilmeyi Önleyecek Şekilde Parçalandı
 st.markdown("""
     <style>
-        .main-title { font-size: 38px !important; font-weight: 800 !important; color: #ffeb3b; margin-bottom: 2px; text-shadow: 0 0 10px rgba(255, 235, 59, 0.5); }
-        .subtitle { font-size: 16px !important; color: #94a3b8; margin-bottom: 25px; }
-        .section-title { font-size: 24px !important; font-weight: 700 !important; color: #38bdf8; margin-top: 30px; margin-bottom: 18px; border-left: 5px solid #ff4081; padding-left: 12px; }
+        .main-title { 
+            font-size: 38px !important; 
+            font-weight: 800 !important; 
+            color: #ffeb3b; 
+            margin-bottom: 2px; 
+            text-shadow: 0 0 10px rgba(255, 235, 59, 0.5); 
+        }
+        .subtitle { 
+            font-size: 16px !important; 
+            color: #94a3b8; 
+            margin-bottom: 25px; 
+        }
+        .section-title { 
+            font-size: 24px !important; 
+            font-weight: 700 !important; 
+            color: #38bdf8; 
+            margin-top: 30px; 
+            margin-bottom: 18px; 
+            border-left: 5px solid #ff4081; 
+            padding-left: 12px; 
+        }
         div[data-testid="column"] {
             background-color: #1e293b !important;
             border: 2px solid #334155 !important;
@@ -19,9 +37,22 @@ st.markdown("""
             border-radius: 12px !important;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
         }
-        .card-title { font-size: 14px !important; font-weight: 700 !important; color: #38bdf8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
-        div[data-testid="stMetricLabel"] { display: none !important; }
-        div[data-testid="stMetricValue"] { font-size: 28px !important; font-weight: 700 !important; color: #ffffff !important; }
+        .card-title { 
+            font-size: 14px !important; 
+            font-weight: 700 !important; 
+            color: #38bdf8; 
+            text-transform: uppercase; 
+            letter-spacing: 1px; 
+            margin-bottom: 10px; 
+        }
+        div[data-testid="stMetricLabel"] { 
+            display: none !important; 
+        }
+        div[data-testid="stMetricValue"] { 
+            font-size: 28px !important; 
+            font-weight: 700 !important; 
+            color: #ffffff !important; 
+        }
         div[data-testid="stMetricDelta"] > div {
             background-color: rgba(16, 185, 129, 0.15) !important;
             color: #10b981 !important;
@@ -57,64 +88,4 @@ def clean_val(val):
     if v_str in ['None', 'nan', '-', '']: return 0
     if '%' in v_str:
         v_str = v_str.replace('%', '').replace(',', '.')
-        try: return float(v_str) / 100
-        except: return 0
-    try:
-        if '.' in v_str or ',' in v_str: return float(v_str.replace(',', '.'))
-        return int(v_str)
-    except: return 0
-
-def format_val(val, col_name, is_gelme_orani=False):
-    c_lower = str(col_name).lower()
-    is_oran_col = (
-        'oran' in c_lower or 
-        '%' in c_lower or 
-        'başarı' in c_lower or 
-        'verimlilik' in c_lower or 
-        'ortalama' in c_lower
-    )
-    if is_oran_col:
-        if is_gelme_orani:
-            v_show = val if val > 5.0 else val * 100.0
-            return "{:.1f}%".format(v_show)
-        v_show = val if val <= 5.0 else val / 100.0
-        return "{:.1%}".format(v_show)
-    if isinstance(val, (int, float)):
-        if val == int(val): return "{:,}".format(int(val))
-        return "{:,.2f}".format(val)
-    return str(val)
-
-def tr_lower(text):
-    if not text: return ""
-    text = str(text).strip()
-    text = text.replace("İ", "i").replace("I", "ı").replace("Ş", "ş").replace("Ğ", "ğ").replace("Ü", "ü").replace("Ç", "ç")
-    return text.lower()
-
-def dinamik_renk_kurali_hibrit(val, page_type="standart"):
-    try:
-        if isinstance(val, str) and '%' in val:
-            v = float(val.replace('%', '').replace(',', '.')) / 100
-        else:
-            v = float(val)
-            if v > 5.0: v = v / 100.0
-        
-        if page_type == "verimlilik":
-            if v >= 0.80: return 'color: #10b981; font-weight: bold;'
-            return 'color: #ff4081; font-weight: bold;'
-        elif page_type == "kriter":
-            if v <= 0.20: return 'color: #10b981; font-weight: bold;'
-            return 'color: #ff4081; font-weight: bold;'
-        elif page_type == "gelme":
-            if v >= 0.40: return 'color: #10b981; font-weight: bold;'
-            return 'color: #ff4081; font-weight: bold;'
-        else:
-            if v >= 1.0: return 'color: #10b981; font-weight: bold;'
-            if v >= 0.8: return 'color: #ffeb3b; font-weight: bold;'
-            return 'color: #ff4081; font-weight: bold;'
-    except: return ''
-
-uploaded_file = None
-kaynak_baglantilar = [
-    "https://raw.githubusercontent.com/okanerdemirr/Hedef-Paneli/main/veri.xlsx.xlsx",
-    "https://raw.githubusercontent.com/okanerdemirr/Hedef-Paneli/main/veri.xlsx",
-    "
+        try: return float(v_str) / 10
