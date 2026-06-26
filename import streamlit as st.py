@@ -6,15 +6,15 @@ import plotly.express as px
 
 st.set_page_config(page_title="Pano", layout="wide")
 
-# Premium modern tema CSS kodları
+# Daha Gösterişli, Renk Dolu Premium CSS Kodları
 st.markdown("""
     <style>
-        .main-title { font-size: 34px !important; font-weight: 800 !important; color: #ffffff; margin-bottom: 2px; letter-spacing: -0.5px; }
-        .subtitle { font-size: 14px !important; color: #94a3b8; margin-bottom: 25px; }
-        .section-title { font-size: 22px !important; font-weight: 700 !important; color: #38bdf8; margin-top: 30px; margin-bottom: 18px; border-left: 5px solid #38bdf8; padding-left: 12px; }
+        .main-title { font-size: 38px !important; font-weight: 800 !important; color: #ffeb3b; margin-bottom: 2px; text-shadow: 0 0 10px rgba(255, 235, 59, 0.5); }
+        .subtitle { font-size: 16px !important; color: #94a3b8; margin-bottom: 25px; }
+        .section-title { font-size: 24px !important; font-weight: 700 !important; color: #38bdf8; margin-top: 30px; margin-bottom: 18px; border-left: 5px solid #ff4081; padding-left: 12px; }
         div[data-testid="column"] {
             background-color: #1e293b !important;
-            border: 1px solid #334155 !important;
+            border: 2px solid #334155 !important;
             padding: 20px !important;
             border-radius: 12px !important;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
@@ -30,13 +30,13 @@ st.markdown("""
             font-weight: 600 !important;
         }
         button[data-baseweb="tab"] {
-            font-size: 16px !important;
+            font-size: 18px !important;
             font-weight: 600 !important;
             color: #94a3b8 !important;
         }
         button[data-baseweb="tab"][aria-selected="true"] {
-            color: #38bdf8 !important;
-            border-bottom-color: #38bdf8 !important;
+            color: #ff4081 !important;
+            border-bottom-color: #ff4081 !important;
         }
     </style>
 """, unsafe_allow_html=True)
@@ -90,6 +90,7 @@ def tr_lower(text):
     text = text.replace("İ", "i").replace("I", "ı").replace("Ş", "ş").replace("Ğ", "ğ").replace("Ü", "ü").replace("Ç", "ç")
     return text.lower()
 
+# Daha canlı renk tonları ile yenilenmiş dinamik renklendirme motoru
 def dinamik_renk_kurali_hibrit(val, page_type="standart"):
     try:
         if isinstance(val, str) and '%' in val:
@@ -99,18 +100,22 @@ def dinamik_renk_kurali_hibrit(val, page_type="standart"):
             if v > 5.0: v = v / 100.0
         
         if page_type == "verimlilik":
+            # Verimlilik Kuralı: %80 ve üzeri Yeşil, %79 ve altı Kırmızı
             if v >= 0.80: return 'color: #10b981; font-weight: bold;'
-            return 'color: #ef4444; font-weight: bold;'
+            return 'color: #ff4081; font-weight: bold;'
         elif page_type == "kriter":
+            # Kriter Dışı Kuralı: %20 ve altı Yeşil, %21 ve üzeri Kırmızı
             if v <= 0.20: return 'color: #10b981; font-weight: bold;'
-            return 'color: #ef4444; font-weight: bold;'
+            return 'color: #ff4081; font-weight: bold;'
         elif page_type == "gelme":
+            # Gelme Oranı Kuralı: %40 ve üzeri Yeşil, %39 ve altı Kırmızı
             if v >= 0.40: return 'color: #10b981; font-weight: bold;'
-            return 'color: #ef4444; font-weight: bold;'
+            return 'color: #ff4081; font-weight: bold;'
         else:
+            # Standart Sekmeler Kuralı: %100+ Yeşil, %80-%99 Sarı, %79- Kırmızı
             if v >= 1.0: return 'color: #10b981; font-weight: bold;'
-            if v >= 0.8: return 'color: #fbbf24; font-weight: bold;'
-            return 'color: #ef4444; font-weight: bold;'
+            if v >= 0.8: return 'color: #ffeb3b; font-weight: bold;'
+            return 'color: #ff4081; font-weight: bold;'
     except: return ''
 
 uploaded_file = None
@@ -271,6 +276,7 @@ if uploaded_file is not None:
                     except:
                         st.dataframe(kpi_tablo_df, width="stretch", hide_index=True)
                     
+                    # Verimlilik sekmesinde grafiğin gelmesi ve % formatı eklendi
                     if is_verimlilik_page:
                         y_ekseni = [oran_sutunu]
                     else:
@@ -279,36 +285,10 @@ if uploaded_file is not None:
                     if not grafik_df.empty and len(y_ekseni) > 0:
                         if current_page_type == "kriter":
                             grafik_df['Grafik_Renk'] = grafik_df[oran_sutunu].apply(lambda x: 'Başarılı (<=%20)' if (x <= 20.0 or (x <= 5.0 and x <= 0.20)) else 'Yetersiz (>%20)')
-                            color_map = {'Başarılı (<=%20)': '#10b981', 'Yetersiz (>%20)': '#ef4444'}
+                            color_map = {'Başarılı (<=%20)': '#10b981', 'Yetersiz (>%20)': '#ff4081'}
                         elif current_page_type == "gelme":
                             grafik_df['Grafik_Renk'] = grafik_df[oran_sutunu].apply(lambda x: 'Başarılı (>=%40)' if (x >= 40.0 or (x <= 5.0 and x >= 0.40)) else 'Yetersiz (<%40)')
-                            color_map = {'Başarılı (>=%40)': '#10b981', 'Yetersiz (<%40)': '#ef4444'}
+                            color_map = {'Başarılı (>=%40)': '#10b981', 'Yetersiz (<%40)': '#ff4081'}
                         elif current_page_type == "verimlilik":
-                            grafik_df['Grafik_Renk'] = grafik_df[oran_sutunu].apply(lambda x: 'Başarılı (>=%80)' if (x >= 0.80 or x >= 80.0) else 'Yetersiz (<%80)')
-                            color_map = {'Başarılı (>=%80)': '#10b981', 'Yetersiz (<%80)': '#ef4444'}
-                        else:
-                            grafik_df['Grafik_Renk'] = grafik_df[oran_sutunu].apply(lambda x: 'Yüksek (>=%100)' if (x >= 1.0 or (x > 5.0 and x >= 100.0)) else ('Orta (%80-%99)' if (x >= 0.8 or (x > 5.0 and x >= 80.0)) else 'Düşük (<%80)'))
-                            color_map = {'Yüksek (>=%100)': '#10b981', 'Orta (%80-%99)': '#fbbf24', 'Düşük (<%80)': '#ef4444'}
-                        
-                        fig = px.bar(
-                            grafik_df, 
-                            x=sutun_isimleri[0], 
-                            y=y_ekseni, 
-                            barmode='group', 
-                            template="plotly_dark", 
-                            height=300,
-                            color='Grafik_Renk',
-                            color_discrete_map=color_map
-                        )
-                        
-                        fig.update_layout(
-                            margin=dict(l=20, r=20, t=20, b=20),
-                            legend_title_text='Performans Durumu',
-                            paper_bgcolor='rgba(0,0,0,0)',
-                            plot_bgcolor='rgba(0,0,0,0)'
-                        )
-                        st.plotly_chart(fig, width="stretch", use_container_width=True)
-    else:
-        st.info("ℹ️ Temsilci hedeflerine ait detaylı alt sayfalar bulunamadı.")
-else:
-    st.markdown("---")
+                            # Verimlilik Grafik Kuralı: %80 ve üzeri Yeşil, %79 ve altı Kırmızı
+                            grafik_df['Grafik_Renk'] = grafik_df[oran_sutunu].apply(lambda x: 'Başarılı (>=%80)' if (x >= 0.80 or x >= 80.0) else 'Yetersiz (<%80
