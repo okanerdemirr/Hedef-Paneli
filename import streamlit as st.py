@@ -6,7 +6,7 @@ import plotly.express as px
 
 st.set_page_config(page_title="Pano", layout="wide")
 
-# Kırpılmayı önlemek amacıyla tüm CSS blokları alt alta küçük parçalara bölündü
+# Sağa taşmayı ve kırpılmayı önlemek amacıyla tüm CSS blokları alt alta küçük parçalara bölündü
 css = '<style>'
 css += '.main-title {'
 css += ' font-size: 40px !important;'
@@ -33,42 +33,17 @@ css += ' border-left: 6px solid #ff007f;'
 css += ' padding-left: 15px;'
 css += ' text-shadow: 0 0 10px rgba(0, 229, 255, 0.2);'
 css += '}'
-# Her kutunun farklı renk çerçeve alabilmesi için özel kol sınıfları tanımlandı
-css += 'div[data-testid="column"]:nth-of-type(1) {'
-css += ' background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%) !important;'
-css += ' border: 2px solid #ff007f !important;'
-css += ' padding: 22px !important; border-radius: 16px !important;'
-css += ' box-shadow: 0 0 15px rgba(255, 0, 127, 0.2) !important; transition: all 0.3s ease;'
+# El yapımı gösterişli neon kutuların CSS sınıfları
+css += '.neon-box {'
+css += ' background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);'
+css += ' padding: 20px; border-radius: 16px; margin-bottom: 15px;'
+css += ' transition: all 0.3s ease; text-align: left;'
 css += '}'
-css += 'div[data-testid="column"]:nth-of-type(2) {'
-css += ' background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%) !important;'
-css += ' border: 2px solid #00e5ff !important;'
-css += ' padding: 22px !important; border-radius: 16px !important;'
-css += ' box-shadow: 0 0 15px rgba(0, 229, 255, 0.2) !important; transition: all 0.3s ease;'
-css += '}'
-css += 'div[data-testid="column"]:nth-of-type(3) {'
-css += ' background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%) !important;'
-css += ' border: 2px solid #ffeb3b !important;'
-css += ' padding: 22px !important; border-radius: 16px !important;'
-css += ' box-shadow: 0 0 15px rgba(255, 235, 59, 0.2) !important; transition: all 0.3s ease;'
-css += '}'
-css += 'div[data-testid="column"]:nth-of-type(4) {'
-css += ' background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%) !important;'
-css += ' border: 2px solid #9c27b0 !important;'
-css += ' padding: 22px !important; border-radius: 16px !important;'
-css += ' box-shadow: 0 0 15px rgba(156, 39, 176, 0.2) !important; transition: all 0.3s ease;'
-css += '}'
-css += 'div[data-testid="column"]:nth-of-type(5) {'
-css += ' background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%) !important;'
-css += ' border: 2px solid #ff5722 !important;'
-css += ' padding: 22px !important; border-radius: 16px !important;'
-css += ' box-shadow: 0 0 15px rgba(255, 87, 34, 0.2) !important; transition: all 0.3s ease;'
-css += '}'
-css += 'div[data-testid="column"]:hover { transform: translateY(-3px) !important; }'
-css += '.card-title { font-size: 15px !important; font-weight: 800 !important; color: #00e5ff; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 12px; }'
-css += 'div[data-testid="stMetricLabel"] { display: none !important; }'
-css += 'div[data-testid="stMetricValue"] { font-size: 32px !important; font-weight: 800 !important; color: #ffffff !important; }'
-css += 'div[data-testid="stMetricDelta"] > div { background-color: rgba(16, 185, 129, 0.2) !important; color: #10b981 !important; padding: 4px 10px !important; border-radius: 6px !important; font-weight: 700 !important; font-size: 15px !important; }'
+css += '.neon-box:hover { transform: translateY(-3px); }'
+css += '.box-title { font-size: 13px; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase; margin-bottom: 4px; }'
+css += '.box-target { font-size: 12px; color: #94a3b8; margin-bottom: 12px; }'
+css += '.box-value { font-size: 32px; font-weight: 800; color: #ffffff; margin-bottom: 10px; line-height: 1; }'
+css += '.box-badge { display: inline-block; padding: 4px 10px; border-radius: 6px; font-size: 13px; font-weight: 700; background: rgba(16, 185, 129, 0.15); color: #10b981; }'
 css += 'button[data-baseweb="tab"] { font-size: 18px !important; font-weight: 700 !important; color: #94a3b8 !important; padding: 12px 24px !important; }'
 css += 'button[data-baseweb="tab"][aria-selected="true"] { color: #ff007f !important; border-bottom-color: #ff007f !important; background-color: rgba(255, 0, 127, 0.05) !important; }'
 css += '</style>'
@@ -133,17 +108,22 @@ def dinamik_renk_kurali_hibrit(val, page_type="standart"):
                 v = v / 100.0
         
         if page_type == "verimlilik":
-            if v >= 0.80: return 'color: #10b981; font-weight: bold;'
+            if v >= 0.80:
+                return 'color: #10b981; font-weight: bold;'
             return 'color: #ff007f; font-weight: bold;'
         elif page_type == "kriter":
-            if v <= 0.20: return 'color: #10b981; font-weight: bold;'
+            if v <= 0.20:
+                return 'color: #10b981; font-weight: bold;'
             return 'color: #ff007f; font-weight: bold;'
         elif page_type == "gelme":
-            if v >= 0.40: return 'color: #10b981; font-weight: bold;'
+            if v >= 0.40:
+                return 'color: #10b981; font-weight: bold;'
             return 'color: #ff007f; font-weight: bold;'
         else:
-            if v >= 1.0: return 'color: #10b981; font-weight: bold;'
-            if v >= 0.8: return 'color: #ffeb3b; font-weight: bold;'
+            if v >= 1.0:
+                return 'color: #10b981; font-weight: bold;'
+            if v >= 0.8:
+                return 'color: #ffeb3b; font-weight: bold;'
             return 'color: #ff007f; font-weight: bold;'
     except: return ''
 
@@ -206,26 +186,69 @@ if uploaded_file is not None:
                 kpi_toplamlar["Gelme Oranı"] = {"hedef": h_v, "gerceklesen": g_v, "oran_val": o_v}
 
     st.markdown('<div class="section-title">⚡ Şirket Genel Performans Matrisi</div>', unsafe_allow_html=True)
-    ana_kpi_sirasi = ["Lead", "Gelen Rezervasyon", "Satış", "Kriter Dışı", "Gelme Oranı"]
-    cols = st.columns(len(ana_kpi_sirasi))
+    cols = st.columns(5)
     
-    for idx, name in enumerate(ana_kpi_sirasi):
-        with cols[idx]:
-            st.markdown('<div class="card-title">💎 {}</div>'.format(name), unsafe_allow_html=True)
-            h_data = kpi_toplamlar[name]["hedef"]
-            g_data = kpi_toplamlar[name]["gerceklesen"]
-            o_data = kpi_toplamlar[name]["oran_val"]
-            
-            if name in ["Gelme Oranı", "Kriter Dışı"]:
-                h_str = "Hedef: {:.1%}".format(h_data) if h_data <= 1 else "Hedef: {:.1f}%".format(h_data)
-                g_str = "{:.1%}".format(g_data) if g_data <= 1 else "{:.1f}%".format(g_data)
-                st.markdown('<div style="color:#94a3b8; font-size:13px; margin-bottom:5px;">{}</div>'.format(h_str), unsafe_allow_html=True)
-                st.metric(label="", value=g_str, delta="Gerçekleşen", delta_color="normal")
-            else:
-                h_str = "Hedef: {:,}".format(int(h_data))
-                g_str = "{:,}".format(int(g_data))
-                st.markdown('<div style="color:#94a3b8; font-size:13px; margin-bottom:5px;">{}</div>'.format(h_str), unsafe_allow_html=True)
-                st.metric(label="", value=g_str, delta="Başarı: {:.1%}".format(o_data), delta_color="normal")
+    # 1. Lead Kutusu (Neon Pembe)
+    with cols[0]:
+        h_str = "Hedef: {:,}".format(int(kpi_toplamlar["Lead"]["hedef"]))
+        g_str = "{:,}".format(int(kpi_toplamlar["Lead"]["gerceklesen"]))
+        b_str = "Başarı: {:.1%}".format(kpi_toplamlar["Lead"]["oran_val"])
+        html = f'<div class="neon-box" style="border: 2px solid #ff007f; box-shadow: 0 0 15px rgba(255,0,127,0.25);">'
+        html += f'<div class="box-title" style="color: #ff007f;">💎 LEAD</div>'
+        html += f'<div class="box-target">{h_str}</div>'
+        html += f'<div class="box-value">{g_str}</div>'
+        html += f'<div class="box-badge">{b_str}</div></div>'
+        st.markdown(html, unsafe_allow_html=True)
+
+    # 2. Gelen Rezervasyon Kutusu (Elektrik Mavisi)
+    with cols[1]:
+        h_str = "Hedef: {:,}".format(int(kpi_toplamlar["Gelen Rezervasyon"]["hedef"]))
+        g_str = "{:,}".format(int(kpi_toplamlar["Gelen Rezervasyon"]["gerceklesen"]))
+        b_str = "Başarı: {:.1%}".format(kpi_toplamlar["Gelen Rezervasyon"]["oran_val"])
+        html = f'<div class="neon-box" style="border: 2px solid #00e5ff; box-shadow: 0 0 15px rgba(0,229,255,0.25);">'
+        html += f'<div class="box-title" style="color: #00e5ff;">💎 GELEN REZERVASYON</div>'
+        html += f'<div class="box-target">{h_str}</div>'
+        html += f'<div class="box-value">{g_str}</div>'
+        html += f'<div class="box-badge">{b_str}</div></div>'
+        st.markdown(html, unsafe_allow_html=True)
+
+    # 3. Satış Kutusu (Parlak Sarı)
+    with cols[2]:
+        h_str = "Hedef: {:,}".format(int(kpi_toplamlar["Satış"]["hedef"]))
+        g_str = "{:,}".format(int(kpi_toplamlar["Satış"]["gerceklesen"]))
+        b_str = "Başarı: {:.1%}".format(kpi_toplamlar["Satış"]["oran_val"])
+        html = f'<div class="neon-box" style="border: 2px solid #ffeb3b; box-shadow: 0 0 15px rgba(255,235,59,0.25);">'
+        html += f'<div class="box-title" style="color: #ffeb3b;">💎 SATIŞ</div>'
+        html += f'<div class="box-target">{h_str}</div>'
+        html += f'<div class="box-value">{g_str}</div>'
+        html += f'<div class="box-badge">{b_str}</div></div>'
+        st.markdown(html, unsafe_allow_html=True)
+
+    # 4. Kriter Dışı Kutusu (Neon Mor)
+    with cols[3]:
+        h_data = kpi_toplamlar["Kriter Dışı"]["hedef"]
+        g_data = kpi_toplamlar["Kriter Dışı"]["gerceklesen"]
+        h_str = "Hedef: {:.1%}".format(h_data) if h_data <= 1 else "Hedef: {:.1f}%".format(h_data)
+        g_str = "{:.1%}".format(g_data) if g_data <= 1 else "{:.1f}%".format(g_data)
+        html = f'<div class="neon-box" style="border: 2px solid #9c27b0; box-shadow: 0 0 15px rgba(156,39,176,0.25);">'
+        html += f'<div class="box-title" style="color: #9c27b0;">💎 KRİTER DIŞI</div>'
+        html += f'<div class="box-target">{h_str}</div>'
+        html += f'<div class="box-value">{g_str}</div>'
+        html += f'<div class="box-badge">Gerçekleşen</div></div>'
+        st.markdown(html, unsafe_allow_html=True)
+
+    # 5. Gelme Oranı Kutusu (Neon Turuncu)
+    with cols[4]:
+        h_data = kpi_toplamlar["Gelme Oranı"]["hedef"]
+        g_data = kpi_toplamlar["Gelme Oranı"]["gerceklesen"]
+        h_str = "Hedef: {:.1%}".format(h_data) if h_data <= 1 else "Hedef: {:.1f}%".format(h_data)
+        g_str = "{:.1%}".format(g_data) if g_data <= 1 else "{:.1f}%".format(g_data)
+        html = f'<div class="neon-box" style="border: 2px solid #ff5722; box-shadow: 0 0 15px rgba(255,87,34,0.25);">'
+        html += f'<div class="box-title" style="color: #ff5722;">💎 GELME ORANI</div>'
+        html += f'<div class="box-target">{h_str}</div>'
+        html += f'<div class="box-value">{g_str}</div>'
+        html += f'<div class="box-badge">Gerçekleşen</div></div>'
+        st.markdown(html, unsafe_allow_html=True)
 
     st.markdown('<hr style="border-top: 1px solid #334155; margin-top:30px; margin-bottom:20px;">', unsafe_allow_html=True)
     st.markdown('<div class="section-title">👥 Temsilci Performans Kırılımları</div>', unsafe_allow_html=True)
