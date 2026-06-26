@@ -66,7 +66,14 @@ def clean_val(val):
 
 def format_val(val, col_name, is_gelme_orani=False):
     c_lower = str(col_name).lower()
-    if 'oran' in c_lower or '%' in c_lower or 'başarı' in c_lower or 'verimlilik' in c_lower or 'ortalama' in c_lower:
+    is_oran_col = (
+        'oran' in c_lower or 
+        '%' in c_lower or 
+        'başarı' in c_lower or 
+        'verimlilik' in c_lower or 
+        'ortalama' in c_lower
+    )
+    if is_oran_col:
         if is_gelme_orani:
             v_show = val if val > 5.0 else val * 100.0
             return "{:.1f}%".format(v_show)
@@ -83,7 +90,6 @@ def tr_lower(text):
     text = text.replace("İ", "i").replace("I", "ı").replace("Ş", "ş").replace("Ğ", "ğ").replace("Ü", "ü").replace("Ç", "ç")
     return text.lower()
 
-# Sekme adına göre çalışan 4 kademeli akıllı dinamik renklendirme motoru
 def dinamik_renk_kurali_hibrit(val, page_type="standart"):
     try:
         if isinstance(val, str) and '%' in val:
@@ -93,19 +99,15 @@ def dinamik_renk_kurali_hibrit(val, page_type="standart"):
             if v > 5.0: v = v / 100.0
         
         if page_type == "verimlilik":
-            # Verimlilik Kuralı: %80 ve üzeri Yeşil, %79 ve altı Kırmızı
             if v >= 0.80: return 'color: #10b981; font-weight: bold;'
             return 'color: #ef4444; font-weight: bold;'
         elif page_type == "kriter":
-            # Kriter Dışı Kuralı: %20 ve altı Yeşil, %21 ve üzeri Kırmızı
             if v <= 0.20: return 'color: #10b981; font-weight: bold;'
             return 'color: #ef4444; font-weight: bold;'
         elif page_type == "gelme":
-            # Gelme Oranı Kuralı: %40 ve üzeri Yeşil, %39 ve altı Kırmızı
             if v >= 0.40: return 'color: #10b981; font-weight: bold;'
             return 'color: #ef4444; font-weight: bold;'
         else:
-            # Standart Sekmeler Kuralı: %100+ Yeşil, %80-%99 Sarı, %79- Kırmızı
             if v >= 1.0: return 'color: #10b981; font-weight: bold;'
             if v >= 0.8: return 'color: #fbbf24; font-weight: bold;'
             return 'color: #ef4444; font-weight: bold;'
@@ -127,33 +129,4 @@ for url in kaynak_baglantilar:
     except: continue
 
 if uploaded_file is not None:
-    all_sheets = uploaded_file.sheet_names
-
-    kpi_toplamlar = {
-        "Lead": {"hedef": 0, "gerceklesen": 0, "oran_val": 0},
-        "Gelen Rezervasyon": {"hedef": 0, "gerceklesen": 0, "oran_val": 0},
-        "Satış": {"hedef": 0, "gerceklesen": 0, "oran_val": 0},
-        "Kriter Dışı": {"hedef": 0, "gerceklesen": 0, "oran_val": 0},
-        "Gelme Oranı": {"hedef": 0, "gerceklesen": 0, "oran_val": 0}
-    }
-    
-    if "Genel Hedef" in all_sheets:
-        df_g = pd.read_excel(uploaded_file, sheet_name="Genel Hedef", header=None)
-        for r in range(len(df_g)):
-            h_adi = tr_lower(df_g.iloc[r, 0]).replace('\n', ' ')
-            if not h_adi or h_adi == 'nan': continue
-            
-            v1 = clean_val(df_g.iloc[r, 1])
-            v2 = clean_val(df_g.iloc[r, 2])
-            v3 = clean_val(df_g.iloc[r, 3]) if df_g.shape[1] > 3 else 0
-            
-            oran_val = v3 if v3 > 0 else (v2 / v1 if v1 > 0 else 0)
-            is_kpi = any(x in h_adi for x in ["lead", "rezervasyon", "hedef"])
-            
-            if oran_val > 1 and not is_kpi: oran_val = oran_val / 100
-
-            if "lead" in h_adi: kpi_toplamlar["Lead"] = {"hedef": v1, "gerceklesen": v2, "oran_val": oran_val}
-            elif "gelen" in h_adi and "rezerv" in h_adi: kpi_toplamlar["Gelen Rezervasyon"] = {"hedef": v1, "gerceklesen": v2, "oran_val": oran_val}
-            elif "sat" in h_adi: kpi_toplamlar["Satış"] = {"hedef": v1, "gerceklesen": v2, "oran_val": oran_val}
-            elif "kriter" in h_adi: kpi_toplamlar["Kriter Dışı"] = {"hedef": v1 if v1 <= 1 else v1/100, "gerceklesen": v2 / 100 if v2 > 1 else v2, "oran_val": v2/100 if v2 > 1 else v2}
-            elif "gelme" in h_adi: kpi_toplamlar["Gelme Oranı"] = {"hedef": v1 if v1 <= 1 else v1/100, "gerceklesen": v2 / 100
+    all_sheets
