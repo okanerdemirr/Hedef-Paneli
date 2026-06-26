@@ -100,9 +100,6 @@ def format_val(val, col_name, is_gelme_orani=False):
         'ortalama' in c_lower
     )
     if is_oran_col:
-        if 1.0 < val <= 5.0 and not is_gelme_orani:
-            val = val / 100.0
-            
         if is_gelme_orani:
             v_show = val if val > 5.0 else val * 100.0
             return "{:.1f}%".format(v_show)
@@ -125,10 +122,7 @@ def dinamik_renk_kurali_hibrit(val, page_type="standart"):
             v = float(val.replace('%', '').replace(',', '.')) / 100
         else:
             v = float(val)
-            if 1.0 < v <= 5.0:
-                v = v / 100.0
-            elif v > 5.0:
-                v = v / 100.0
+            if v > 5.0: v = v / 100.0
         
         if page_type == "verimlilik":
             if v >= 0.80: return 'color: #10b981; font-weight: bold;'
@@ -287,20 +281,16 @@ if uploaded_file is not None:
                     f_row = {}
                     for k, v in row.items():
                         if k == sutun_isimleri[0]: f_row[k] = v
-                        else: 
-                            # NameError'ı çözmek adına doğrudan sütun isimleri listesindeki son eleman baz alındı
-                            if k == sutun_isimleri[-1] and 1.0 < v <= 5.0:
-                                v = v / 100.0
-                            f_row[k] = format_val(v, k, is_gelme_orani_page)
+                        else: f_row[k] = format_val(v, k, is_gelme_orani_page)
                     formatted_rows.append(f_row)
                     
                 if toplam_satir_data and arama_filtresi == "": formatted_rows.append(toplam_satir_data)
                     
-                oran_sutunu = sutun_isimleri[-1]
                 if len(formatted_rows) > 0 and not (len(formatted_rows) == 1 and formatted_rows[0][sutun_isimleri[0]] == '🔴 Genel Toplam'):
                     st.markdown("#### 📁 {} Veri Seti".format(tablo_basligi))
                     kpi_tablo_df = pd.DataFrame(formatted_rows)
                     
+                    oran_sutunu = sutun_isimleri[-1] 
                     try:
                         styled_df = kpi_tablo_df.style.map(lambda x: dinamik_renk_kurali_hibrit(x, current_page_type), subset=[oran_sutunu])
                         st.dataframe(styled_df, width="stretch", hide_index=True)
@@ -314,16 +304,15 @@ if uploaded_file is not None:
                     
                     if not grafik_df.empty and len(y_ekseni) > 0:
                         def get_bar_label(x, p_type):
-                            if x > 5.0: x = x / 100.0
                             if p_type == "kriter":
-                                return 'Başarılı (<=%20)' if (x <= 0.20) else 'Yetersiz (>%20)'
+                                return 'Başarılı (<=%20)' if (x <= 20.0 or (x <= 5.0 and x <= 0.20)) else 'Yetersiz (>%20)'
                             elif p_type == "gelme":
-                                return 'Başarılı (>=%40)' if (x >= 0.40) else 'Yetersiz (<%40)'
+                                return 'Başarılı (>=%40)' if (x >= 40.0 or (x <= 5.0 and x >= 0.40)) else 'Yetersiz (<%40)'
                             elif p_type == "verimlilik":
-                                return 'Başarılı (>=%80)' if (x >= 0.80) else 'Yetersiz (<%80)'
+                                return 'Başarılı (>=%80)' if (x >= 0.80 or x >= 80.0) else 'Yetersiz (<%80)'
                             else:
-                                if x >= 1.0: return 'Yüksek (>=%100)'
-                                if x >= 0.8: return 'Orta (%80-%99)'
+                                if x >= 1.0 or (x > 5.0 and x >= 100.0): return 'Yüksek (>=%100)'
+                                if x >= 0.8 or (x > 5.0 and x >= 80.0): return 'Orta (%80-%99)'
                                 return 'Düşük (<%80)'
 
                         grafik_df['Grafik_Renk'] = grafik_df[oran_sutunu].apply(lambda x: get_bar_label(x, current_page_type))
