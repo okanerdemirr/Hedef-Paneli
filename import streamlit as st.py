@@ -6,7 +6,7 @@ import plotly.express as px
 
 st.set_page_config(page_title="Pano", layout="wide")
 
-# Tüm CSS blokları kırpılmayı önlemek amacıyla alt alta küçük parçalara bölündü
+# Orijinal metrik stilini koruyarak her kutuya farklı renk çerçeve veren CSS yapısı
 css = '<style>'
 css += '.main-title {'
 css += ' font-size: 40px !important;'
@@ -17,41 +17,41 @@ css += ' -webkit-text-fill-color: transparent;'
 css += ' margin-bottom: 2px;'
 css += ' text-shadow: 0 0 20px rgba(0, 229, 255, 0.3);'
 css += '}'
-css += '.subtitle {'
-css += ' font-size: 16px !important;'
-css += ' color: #a1a1aa;'
-css += ' margin-bottom: 30px;'
-css += ' font-weight: 500;'
+css += '.subtitle { font-size: 16px !important; color: #a1a1aa; margin-bottom: 30px; font-weight: 500; }'
+css += '.section-title { font-size: 26px !important; font-weight: 800 !important; color: #00e5ff; margin-top: 35px; margin-bottom: 20px; border-left: 6px solid #ff007f; padding-left: 15px; text-shadow: 0 0 10px rgba(0, 229, 255, 0.2); }'
+# Orijinal metrik sütunlarını yakalayıp renkli çerçeve ekleyen bloklar
+css += 'div[data-testid="column"]:nth-of-type(1) {'
+css += ' background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%) !important;'
+css += ' border: 2px solid #ff007f !important; padding: 20px !important; border-radius: 14px !important;'
+css += ' box-shadow: 0 0 15px rgba(255, 0, 127, 0.2) !important; transition: all 0.3s ease;'
 css += '}'
-css += '.section-title {'
-css += ' font-size: 26px !important;'
-css += ' font-weight: 800 !important;'
-css += ' color: #00e5ff;'
-css += ' margin-top: 35px;'
-css += ' margin-bottom: 20px;'
-css += ' border-left: 6px solid #ff007f;'
-css += ' padding-left: 15px;'
-css += ' text-shadow: 0 0 10px rgba(0, 229, 255, 0.2);'
+css += 'div[data-testid="column"]:nth-of-type(2) {'
+css += ' background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%) !important;'
+css += ' border: 2px solid #00e5ff !important; padding: 20px !important; border-radius: 14px !important;'
+css += ' box-shadow: 0 0 15px rgba(0, 229, 255, 0.2) !important; transition: all 0.3s ease;'
 css += '}'
-# Üst matris el yapımı neon kutuların CSS sınıfları
-css += '.neon-box {'
-css += ' background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);'
-css += ' padding: 20px; border-radius: 16px; margin-bottom: 15px;'
-css += ' transition: all 0.3s ease; text-align: left;'
+css += 'div[data-testid="column"]:nth-of-type(3) {'
+css += ' background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%) !important;'
+css += ' border: 2px solid #ffeb3b !important; padding: 20px !important; border-radius: 14px !important;'
+css += ' box-shadow: 0 0 15px rgba(255, 235, 59, 0.2) !important; transition: all 0.3s ease;'
 css += '}'
-css += '.neon-box:hover { transform: translateY(-3px); }'
-css += '.box-title { font-size: 13px; font-weight: 800; letter-spacing: 1.5px; margin-bottom: 12px; }'
+css += 'div[data-testid="column"]:nth-of-type(4) {'
+css += ' background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%) !important;'
+css += ' border: 2px solid #9c27b0 !important; padding: 20px !important; border-radius: 14px !important;'
+css += ' box-shadow: 0 0 15px rgba(156, 39, 176, 0.2) !important; transition: all 0.3s ease;'
+css += '}'
+css += 'div[data-testid="column"]:nth-of-type(5) {'
+css += ' background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%) !important;'
+css += ' border: 2px solid #ff5722 !important; padding: 20px !important; border-radius: 14px !important;'
+css += ' box-shadow: 0 0 15px rgba(255, 87, 34, 0.2) !important; transition: all 0.3s ease;'
+css += '}'
+css += 'div[data-testid="column"]:hover { transform: translateY(-2px) !important; }'
+css += '.card-title { font-size: 14px !important; font-weight: 700 !important; color: #38bdf8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; }'
 css += 'div[data-testid="stMetricLabel"] { display: none !important; }'
-css += 'div[data-testid="stMetricValue"] { font-size: 32px !important; font-weight: 800 !important; color: #ffffff !important; }'
-css += 'div[data-testid="stMetricDelta"] > div { background-color: rgba(16, 185, 129, 0.2) !important; color: #10b981 !important; padding: 4px 10px !important; border-radius: 6px !important; font-weight: 700 !important; font-size: 15px !important; }'
+css += 'div[data-testid="stMetricValue"] { font-size: 28px !important; font-weight: 700 !important; color: #ffffff !important; }'
+css += 'div[data-testid="stMetricDelta"] > div { background-color: rgba(16, 185, 129, 0.15) !important; color: #10b981 !important; padding: 4px 10px !important; border-radius: 6px !important; font-weight: 600 !important; }'
 # Alt sekmelerin (Tabs) her birinin farklı renk çerçeve alması için CSS sınıfları
-css += 'button[data-baseweb="tab"] {'
-css += ' font-size: 16px !important; font-weight: 700 !important;'
-css += ' color: #94a3b8 !important; padding: 12px 20px !important;'
-css += ' background: #1e293b !important;'
-css += ' border-radius: 10px !important; margin-right: 8px !important;'
-css += ' transition: all 0.3s ease !important;'
-css += '}'
+css += 'button[data-baseweb="tab"] { font-size: 16px !important; font-weight: 700 !important; color: #94a3b8 !important; padding: 12px 20px !important; background: #1e293b !important; border-radius: 10px !important; margin-right: 8px !important; transition: all 0.3s ease !important; }'
 css += 'button[data-baseweb="tab"]:nth-of-type(1) { border: 2px solid #ff007f !important; }'
 css += 'button[data-baseweb="tab"]:nth-of-type(2) { border: 2px solid #00e5ff !important; }'
 css += 'button[data-baseweb="tab"]:nth-of-type(3) { border: 2px solid #ffeb3b !important; }'
@@ -60,23 +60,15 @@ css += 'button[data-baseweb="tab"]:nth-of-type(5) { border: 2px solid #ff5722 !i
 css += 'button[data-baseweb="tab"]:nth-of-type(6) { border: 2px solid #9c27b0 !important; }'
 css += 'button[data-baseweb="tab"]:nth-of-type(7) { border: 2px solid #2196f3 !important; }'
 css += 'button[data-baseweb="tab"]:nth-of-type(8) { border: 2px solid #e91e63 !important; }'
-# Seçili olan sekmenin arka plan parıltı efekti
-css += 'button[data-baseweb="tab"][aria-selected="true"] {'
-css += ' color: #ffffff !important;'
-css += ' background: rgba(255, 255, 255, 0.08) !important;'
-css += ' box-shadow: 0 0 15px rgba(255, 255, 255, 0.15) !important;'
-css += '}'
-css += 'div[data-testid="stTab"] {'
-css += ' background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%) !important;'
-css += ' border: 2px solid #334155 !important;'
-css += ' padding: 25px !important; border-radius: 16px !important;'
-css += ' margin-top: 15px !important;'
-css += '}'
+css += 'button[data-baseweb="tab"][aria-selected="true"] { color: #ffffff !important; background: rgba(255, 255, 255, 0.08) !important; box-shadow: 0 0 15px rgba(255, 255, 255, 0.15) !important; }'
+css += 'div[data-testid="stTab"] { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%) !important; border: 2px solid #334155 !important; padding: 25px !important; border-radius: 16px !important; margin-top: 15px !important; }'
+# Her sekmedeki tabloyu altın sarısı parıltılı çerçeveye alan sınıf
+css += 'div[data-testid="stDataFrame"] { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%) !important; border: 3px solid #FFD700 !important; border-radius: 16px !important; padding: 15px !important; box-shadow: 0 0 25px rgba(255, 215, 0, 0.3) !important; margin-top: 10px !important; margin-bottom: 20px !important; }'
 css += '</style>'
 st.markdown(css, unsafe_allow_html=True)
 
-st.markdown('<h1 class="main-title">📊 Temsilci Performans Kontrol Paneli</h1>', unsafe_allow_html=True)
-st.markdown('<p class="subtitle">Şirket genel hedefleri ve dinamik temsilci performans matrisi</p>', unsafe_allow_html=True)
+st.markdown('<div class="main-title">📊 Temsilci Performans Kontrol Paneli</div>', unsafe_allow_html=True)
+st.markdown('<div class="subtitle">Şirket genel hedefleri ve dinamik temsilci performans matrisi</div>', unsafe_allow_html=True)
 
 st.sidebar.markdown("### ⚙️ Veri Kontrol Paneli")
 arama_filtresi = st.sidebar.text_input("👤 Temsilci Ara (Dinamik)", "").strip().lower()
@@ -206,64 +198,26 @@ if uploaded_file is not None:
                 kpi_toplamlar["Gelme Oranı"] = {"hedef": h_v, "gerceklesen": g_v, "oran_val": o_v}
 
     st.markdown('<div class="section-title">⚡ Şirket Genel Performans Matrisi</div>', unsafe_allow_html=True)
-    cols = st.columns(5)
+    ana_kpi_sirasi = ["Lead", "Gelen Rezervasyon", "Satış", "Kriter Dışı", "Gelme Oranı"]
+    cols = st.columns(len(ana_kpi_sirasi))
     
-    with cols[0]:
-        h_str = "Hedef: {:,}".format(int(kpi_toplamlar["Lead"]["hedef"]))
-        g_str = "{:,}".format(int(kpi_toplamlar["Lead"]["gerceklesen"]))
-        b_str = "Başarı: {:.1%}".format(kpi_toplamlar["Lead"]["oran_val"])
-        html = f'<div class="neon-box" style="border: 2px solid #ff007f; box-shadow: 0 0 15px rgba(255,0,127,0.25);">'
-        html += f'<div class="box-title" style="color: #ff007f;">💎 LEAD</div>'
-        html += f'<div class="box-target">{h_str}</div>'
-        html += f'<div class="box-value">{g_str}</div>'
-        html += f'<div class="box-badge">{b_str}</div></div>'
-        st.markdown(html, unsafe_allow_html=True)
-
-    with cols[1]:
-        h_str = "Hedef: {:,}".format(int(kpi_toplamlar["Gelen Rezervasyon"]["hedef"]))
-        g_str = "{:,}".format(int(kpi_toplamlar["Gelen Rezervasyon"]["gerceklesen"]))
-        b_str = "Başarı: {:.1%}".format(kpi_toplamlar["Gelen Rezervasyon"]["oran_val"])
-        html = f'<div class="neon-box" style="border: 2px solid #00e5ff; box-shadow: 0 0 15px rgba(0,229,255,0.25);">'
-        html += f'<div class="box-title" style="color: #00e5ff;">💎 GELEN REZERVASYON</div>'
-        html += f'<div class="box-target">{h_str}</div>'
-        html += f'<div class="box-value">{g_str}</div>'
-        html += f'<div class="box-badge">{b_str}</div></div>'
-        st.markdown(html, unsafe_allow_html=True)
-
-    with cols[2]:
-        h_str = "Hedef: {:,}".format(int(kpi_toplamlar["Satış"]["hedef"]))
-        g_str = "{:,}".format(int(kpi_toplamlar["Satış"]["gerceklesen"]))
-        b_str = "Başarı: {:.1%}".format(kpi_toplamlar["Satış"]["oran_val"])
-        html = f'<div class="neon-box" style="border: 2px solid #ffeb3b; box-shadow: 0 0 15px rgba(255,235,59,0.25);">'
-        html += f'<div class="box-title" style="color: #ffeb3b;">💎 SATIŞ</div>'
-        html += f'<div class="box-target">{h_str}</div>'
-        html += f'<div class="box-value">{g_str}</div>'
-        html += f'<div class="box-badge">{b_str}</div></div>'
-        st.markdown(html, unsafe_allow_html=True)
-
-    with cols[3]:
-        h_data = kpi_toplamlar["Kriter Dışı"]["hedef"]
-        g_data = kpi_toplamlar["Kriter Dışı"]["gerceklesen"]
-        h_str = "Hedef: {:.1%}".format(h_data) if h_data <= 1 else "Hedef: {:.1f}%".format(h_data)
-        g_str = "{:.1%}".format(g_data) if g_data <= 1 else "{:.1f}%".format(g_data)
-        html = f'<div class="neon-box" style="border: 2px solid #9c27b0; box-shadow: 0 0 15px rgba(156,39,176,0.25);">'
-        html += f'<div class="box-title" style="color: #9c27b0;">💎 KRİTER DIŞI</div>'
-        html += f'<div class="box-target">{h_str}</div>'
-        html += f'<div class="box-value">{g_str}</div>'
-        html += f'<div class="box-badge">Gerçekleşen</div></div>'
-        st.markdown(html, unsafe_allow_html=True)
-
-    with cols[4]:
-        h_data = kpi_toplamlar["Gelme Oranı"]["hedef"]
-        g_data = kpi_toplamlar["Gelme Oranı"]["gerceklesen"]
-        h_str = "Hedef: {:.1%}".format(h_data) if h_data <= 1 else "Hedef: {:.1f}%".format(h_data)
-        g_str = "{:.1%}".format(g_data) if g_data <= 1 else "{:.1f}%".format(g_data)
-        html = f'<div class="neon-box" style="border: 2px solid #ff5722; box-shadow: 0 0 15px rgba(255,87,34,0.25);">'
-        html += f'<div class="box-title" style="color: #ff5722;">💎 GELME ORANI</div>'
-        html += f'<div class="box-target">{h_str}</div>'
-        html += f'<div class="box-value">{g_str}</div>'
-        html += f'<div class="box-badge">Gerçekleşen</div></div>'
-        st.markdown(html, unsafe_allow_html=True)
+    for idx, name in enumerate(ana_kpi_sirasi):
+        with cols[idx]:
+            st.markdown('<div class="card-title">💎 {}</div>'.format(name), unsafe_allow_html=True)
+            h_data = kpi_toplamlar[name]["hedef"]
+            g_data = kpi_toplamlar[name]["gerceklesen"]
+            o_data = kpi_toplamlar[name]["oran_val"]
+            
+            if name in ["Gelme Oranı", "Kriter Dışı"]:
+                h_str = "Hedef: {:.1%}".format(h_data) if h_data <= 1 else "Hedef: {:.1f}%".format(h_data)
+                g_str = "{:.1%}".format(g_data) if g_data <= 1 else "{:.1f}%".format(g_data)
+                st.markdown('<div style="color:#94a3b8; font-size:13px; margin-bottom:5px;">{}</div>'.format(h_str), unsafe_allow_html=True)
+                st.metric(label="", value=g_str, delta="Gerçekleşen", delta_color="normal")
+            else:
+                h_str = "Hedef: {:,}".format(int(h_data))
+                g_str = "{:,}".format(int(g_data))
+                st.markdown('<div style="color:#94a3b8; font-size:13px; margin-bottom:5px;">{}</div>'.format(h_str), unsafe_allow_html=True)
+                st.metric(label="", value=g_str, delta="Başarı: {:.1%}".format(o_data), delta_color="normal")
 
     st.markdown('<hr style="border-top: 1px solid #334155; margin-top:30px; margin-bottom:20px;">', unsafe_allow_html=True)
     st.markdown('<div class="section-title">👥 Temsilci Performans Kırılımları</div>', unsafe_allow_html=True)
