@@ -6,7 +6,7 @@ import plotly.express as px
 
 st.set_page_config(page_title="Pano", layout="wide")
 
-# Kırpılmayı önlemek amacıyla parıltılı neon CSS blokları güvenli satırlara bölündü
+# Premium ve Gösterişli Renk Dolu CSS Kodları Kesilmeyi Önleyecek Şekilde Yapılandırıldı
 st.markdown("""
     <style>
         .main-title { 
@@ -73,75 +73,3 @@ st.markdown("""
         }
         button[data-baseweb="tab"] {
             font-size: 18px !important;
-            font-weight: 700 !important;
-            color: #94a3b8 !important;
-            padding: 12px 24px !important;
-        }
-        button[data-baseweb="tab"][aria-selected="true"] {
-            color: #ff007f !important;
-            border-bottom-color: #ff007f !important;
-            background-color: rgba(255, 0, 127, 0.05) !important;
-        }
-    </style>
-""", unsafe_allow_html=True)
-
-# Başlık metinleri güvenli biçimde güncellendi
-st.markdown('<h1 class="main-title">📊 Temsilci Performans Kontrol Paneli</h1>', unsafe_allow_html=True)
-st.markdown('<p class="subtitle">Şirket genel hedefleri ve dinamik temsilci performans matrisi</p>', unsafe_allow_html=True)
-
-st.sidebar.markdown("### ⚙️ Veri Kontrol Paneli")
-arama_filtresi = st.sidebar.text_input("👤 Temsilci Ara (Dinamik)", "").strip().lower()
-
-if st.sidebar.button("🔄 Verileri Yenile / Sıfırla"):
-    st.cache_data.clear()
-    st.rerun()
-
-def clean_val(val):
-    if pd.isna(val): return 0
-    v_str = str(val).strip()
-    if v_str in ['None', 'nan', '-', '']: return 0
-    if '%' in v_str:
-        v_str = v_str.replace('%', '').replace(',', '.')
-        try: return float(v_str) / 100
-        except: return 0
-    try:
-        if '.' in v_str or ',' in v_str: return float(v_str.replace(',', '.'))
-        return int(v_str)
-    except: return 0
-
-def format_val(val, col_name, is_gelme_orani=False):
-    c_lower = str(col_name).lower()
-    is_oran_col = (
-        'oran' in c_lower or 
-        '%' in c_lower or 
-        'başarı' in c_lower or 
-        'verimlilik' in c_lower or 
-        'ortalama' in c_lower
-    )
-    if is_oran_col:
-        if is_gelme_orani:
-            v_show = val if val > 5.0 else val * 100.0
-            return "{:.1f}%".format(v_show)
-        v_show = val if val <= 5.0 else val / 100.0
-        return "{:.1%}".format(v_show)
-    if isinstance(val, (int, float)):
-        if val == int(val): return "{:,}".format(int(val))
-        return "{:,.2f}".format(val)
-    return str(val)
-
-def tr_lower(text):
-    if not text: return ""
-    text = str(text).strip()
-    text = text.replace("İ", "i").replace("I", "ı").replace("Ş", "ş").replace("Ğ", "ğ").replace("Ü", "ü").replace("Ç", "ç")
-    return text.lower()
-
-def dinamik_renk_kurali_hibrit(val, page_type="standart"):
-    try:
-        if isinstance(val, str) and '%' in val:
-            v = float(val.replace('%', '').replace(',', '.')) / 100
-        else:
-            v = float(val)
-            if v > 5.0: v = v / 100.0
-        
-        if page_type == "verimlilik":
-            if v >= 0.80
