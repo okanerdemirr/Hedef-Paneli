@@ -68,4 +68,10 @@ def format_val(val, col_name, is_gelme_orani=False):
     c_lower = str(col_name).lower()
     if 'oran' in c_lower or '%' in c_lower or 'başarı' in c_lower or 'verimlilik' in c_lower or 'ortalama' in c_lower:
         if is_gelme_orani:
-            v_show = val
+            v_show = val if val > 5.0 else val * 100.0
+            return "{:.1f}%".format(v_show)
+        v_show = val if val <= 5.0 else val / 100.0
+        return "{:.1%}".format(v_show)
+    if isinstance(val, (int, float)):
+        if val == int(val): return "{:,}".format(int(val))
+        return "{:,.2f}".format(val
