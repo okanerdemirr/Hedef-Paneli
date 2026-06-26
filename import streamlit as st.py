@@ -6,7 +6,7 @@ import plotly.express as px
 
 st.set_page_config(page_title="Pano", layout="wide")
 
-# Tüm CSS kodları sağa taşmayı ve kırpılmayı önlemek amacıyla mikro parçalara bölündü
+# Tüm CSS blokları kırpılmayı önlemek amacıyla alt alta küçük parçalara bölündü
 css = '<style>'
 css += '.main-title {'
 css += ' font-size: 40px !important;'
@@ -33,30 +33,44 @@ css += ' border-left: 6px solid #ff007f;'
 css += ' padding-left: 15px;'
 css += ' text-shadow: 0 0 10px rgba(0, 229, 255, 0.2);'
 css += '}'
-# Üst ana metrik kutularının neon çerçeve stilleri
-css += 'div[data-testid="column"] {'
-css += ' background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%) !important;'
-css += ' border: 2px solid #ff007f !important;'
-css += ' padding: 22px !important; border-radius: 16px !important;'
-css += ' box-shadow: 0 0 15px rgba(255, 0, 127, 0.15) !important;'
-css += ' transition: all 0.3s ease;'
+# Üst matris el yapımı neon kutuların CSS sınıfları
+css += '.neon-box {'
+css += ' background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);'
+css += ' padding: 20px; border-radius: 16px; margin-bottom: 15px;'
+css += ' transition: all 0.3s ease; text-align: left;'
 css += '}'
-css += 'div[data-testid="column"]:hover { border-color: #00e5ff !important; box-shadow: 0 0 20px rgba(0, 229, 255, 0.25) !important; transform: translateY(-3px); }'
-css += '.card-title { font-size: 15px !important; font-weight: 800 !important; color: #00e5ff; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 12px; }'
+css += '.neon-box:hover { transform: translateY(-3px); }'
+css += '.box-title { font-size: 13px; font-weight: 800; letter-spacing: 1.5px; margin-bottom: 12px; }'
 css += 'div[data-testid="stMetricLabel"] { display: none !important; }'
 css += 'div[data-testid="stMetricValue"] { font-size: 32px !important; font-weight: 800 !important; color: #ffffff !important; }'
 css += 'div[data-testid="stMetricDelta"] > div { background-color: rgba(16, 185, 129, 0.2) !important; color: #10b981 !important; padding: 4px 10px !important; border-radius: 6px !important; font-weight: 700 !important; font-size: 15px !important; }'
-css += 'button[data-baseweb="tab"] { font-size: 18px !important; font-weight: 700 !important; color: #94a3b8 !important; padding: 12px 24px !important; }'
-css += 'button[data-baseweb="tab"][aria-selected="true"] { color: #ff007f !important; border-bottom-color: #ff007f !important; background-color: rgba(255, 0, 127, 0.05) !important; }'
-# Temsilci Performans Kırılımları bölümündeki tüm tabloları Altın Sarısı çerçeve içine alan CSS
-css += 'div[data-testid="stDataFrame"] {'
+# Alt sekmelerin (Tabs) her birinin farklı renk çerçeve alması için CSS sınıfları
+css += 'button[data-baseweb="tab"] {'
+css += ' font-size: 16px !important; font-weight: 700 !important;'
+css += ' color: #94a3b8 !important; padding: 12px 20px !important;'
+css += ' background: #1e293b !important;'
+css += ' border-radius: 10px !important; margin-right: 8px !important;'
+css += ' transition: all 0.3s ease !important;'
+css += '}'
+css += 'button[data-baseweb="tab"]:nth-of-type(1) { border: 2px solid #ff007f !important; }'
+css += 'button[data-baseweb="tab"]:nth-of-type(2) { border: 2px solid #00e5ff !important; }'
+css += 'button[data-baseweb="tab"]:nth-of-type(3) { border: 2px solid #ffeb3b !important; }'
+css += 'button[data-baseweb="tab"]:nth-of-type(4) { border: 2px solid #10b981 !important; }'
+css += 'button[data-baseweb="tab"]:nth-of-type(5) { border: 2px solid #ff5722 !important; }'
+css += 'button[data-baseweb="tab"]:nth-of-type(6) { border: 2px solid #9c27b0 !important; }'
+css += 'button[data-baseweb="tab"]:nth-of-type(7) { border: 2px solid #2196f3 !important; }'
+css += 'button[data-baseweb="tab"]:nth-of-type(8) { border: 2px solid #e91e63 !important; }'
+# Seçili olan sekmenin arka plan parıltı efekti
+css += 'button[data-baseweb="tab"][aria-selected="true"] {'
+css += ' color: #ffffff !important;'
+css += ' background: rgba(255, 255, 255, 0.08) !important;'
+css += ' box-shadow: 0 0 15px rgba(255, 255, 255, 0.15) !important;'
+css += '}'
+css += 'div[data-testid="stTab"] {'
 css += ' background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%) !important;'
-css += ' border: 3px solid #FFD700 !important;'
-css += ' border-radius: 16px !important;'
-css += ' padding: 15px !important;'
-css += ' box-shadow: 0 0 25px rgba(255, 215, 0, 0.3) !important;'
-css += ' margin-top: 10px !important;'
-css += ' margin-bottom: 20px !important;'
+css += ' border: 2px solid #334155 !important;'
+css += ' padding: 25px !important; border-radius: 16px !important;'
+css += ' margin-top: 15px !important;'
 css += '}'
 css += '</style>'
 st.markdown(css, unsafe_allow_html=True)
@@ -110,36 +124,26 @@ def tr_lower(text):
     text = text.replace("İ", "i").replace("I", "ı").replace("Ş", "ş").replace("Ğ", "ğ").replace("Ü", "ü").replace("Ç", "ç")
     return text.lower()
 
-# Lojik kodların kırpılmasını önlemek adına if-else blokları alt alta parçalandı
 def dinamik_renk_kurali_hibrit(val, page_type="standart"):
     try:
         if isinstance(val, str) and '%' in val:
             v = float(val.replace('%', '').replace(',', '.')) / 100
         else:
             v = float(val)
-            if v > 5.0: 
-                v = v / 100.0
+            if v > 5.0: v = v / 100.0
         
         if page_type == "verimlilik":
-            if v >= 0.80:
-                return 'color: #10b981; font-weight: bold;'
+            if v >= 0.80: return 'color: #10b981; font-weight: bold;'
             return 'color: #ff007f; font-weight: bold;'
-            
         elif page_type == "kriter":
-            if v <= 0.20:
-                return 'color: #10b981; font-weight: bold;'
+            if v <= 0.20: return 'color: #10b981; font-weight: bold;'
             return 'color: #ff007f; font-weight: bold;'
-            
         elif page_type == "gelme":
-            if v >= 0.40:
-                return 'color: #10b981; font-weight: bold;'
+            if v >= 0.40: return 'color: #10b981; font-weight: bold;'
             return 'color: #ff007f; font-weight: bold;'
-            
         else:
-            if v >= 1.0:
-                return 'color: #10b981; font-weight: bold;'
-            if v >= 0.8:
-                return 'color: #ffeb3b; font-weight: bold;'
+            if v >= 1.0: return 'color: #10b981; font-weight: bold;'
+            if v >= 0.8: return 'color: #ffeb3b; font-weight: bold;'
             return 'color: #ff007f; font-weight: bold;'
     except: return ''
 
@@ -345,7 +349,6 @@ if uploaded_file is not None:
                         y_ekseni = sutun_isimleri[1:-1] if ('oran' in sutun_isimleri[-1].lower() or '%' in sutun_isimleri[-1].lower() or 'verimlilik' in sutun_isimleri[-1].lower() or 'ortalama' in sutun_isimleri[-1].lower()) else sutun_isimleri[1:]
                     
                     if not grafik_df.empty and len(y_ekseni) > 0:
-                        # Kırpılmaları önlemek adına grafik dize yapısı parçalandı
                         def get_bar_label(x, p_type):
                             if p_type == "kriter":
                                 return 'Başarılı (<=%20)' if (x <= 20.0 or (x <= 5.0 and x <= 0.20)) else 'Yetersiz (>%20)'
