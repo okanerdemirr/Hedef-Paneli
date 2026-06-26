@@ -66,45 +66,6 @@ def clean_val(val):
 
 def format_val(val, col_name, is_gelme_orani=False):
     c_lower = str(col_name).lower()
-    # "ortalama" içeren başlıkları da otomatik olarak yüzde formatına çekmek için kural eklendi
     if 'oran' in c_lower or '%' in c_lower or 'başarı' in c_lower or 'verimlilik' in c_lower or 'ortalama' in c_lower:
         if is_gelme_orani:
-            v_show = val if val > 5.0 else val * 100.0
-            return "{:.1f}%".format(v_show)
-        v_show = val if val <= 5.0 else val / 100.0
-        return "{:.1%}".format(v_show)
-    if isinstance(val, (int, float)):
-        if val == int(val): return "{:,}".format(int(val))
-        return "{:,.2f}".format(val)
-    return str(val)
-
-def tr_lower(text):
-    if not text: return ""
-    text = str(text).strip()
-    text = text.replace("İ", "i").replace("I", "ı").replace("Ş", "ş").replace("Ğ", "ğ").replace("Ü", "ü").replace("Ç", "ç")
-    return text.lower()
-
-# Sekme adına göre çalışan 4 kademeli akıllı dinamik renklendirme motoru
-def dinamik_renk_kurali_hibrit(val, page_type="standart"):
-    try:
-        if isinstance(val, str) and '%' in val:
-            v = float(val.replace('%', '').replace(',', '.')) / 100
-        else:
-            v = float(val)
-            if v > 5.0: v = v / 100.0
-        
-        if page_type == "verimlilik":
-            # Verimlilik Kuralı: %80 ve üzeri Yeşil, %79 ve altı Kırmızı
-            if v >= 0.80: return 'color: #10b981; font-weight: bold;'
-            return 'color: #ef4444; font-weight: bold;'
-        elif page_type == "kriter":
-            # Kriter Dışı Kuralı: %20 ve altı Yeşil, %21 ve üzeri Kırmızı
-            if v <= 0.20: return 'color: #10b981; font-weight: bold;'
-            return 'color: #ef4444; font-weight: bold;'
-        elif page_type == "gelme":
-            # Gelme Oranı Kuralı: %40 ve üzeri Yeşil, %39 ve altı Kırmızı
-            if v >= 0.40: return 'color: #10b981; font-weight: bold;'
-            return 'color: #ef4444; font-weight: bold;'
-        else:
-            # Standart Sekmeler Kuralı: %100+ Yeşil, %80-%99 Sarı, %79- Kırmızı
-            if v >= 1.0: return 'color: #10b9
+            v_show = val
