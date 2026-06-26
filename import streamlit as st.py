@@ -66,7 +66,6 @@ def clean_val(val):
 
 def format_val(val, col_name, is_gelme_orani=False):
     c_lower = str(col_name).lower()
-    # "ortalama" veya "verimlilik" içeren başlıkları da otomatik olarak yüzde formatına çekiyoruz
     if 'oran' in c_lower or '%' in c_lower or 'başarı' in c_lower or 'verimlilik' in c_lower or 'ortalama' in c_lower:
         if is_gelme_orani:
             v_show = val if val > 5.0 else val * 100.0
@@ -78,7 +77,31 @@ def format_val(val, col_name, is_gelme_orani=False):
         return "{:,.2f}".format(val)
     return str(val)
 
+# Kırpılmayı önlemek amacıyla Türkçe karakter temizleme satırları alt alta bölünerek tamamen güvenli hale getirildi
 def tr_lower(text):
     if not text: return ""
-    text = str(text).strip()
-    text = text.replace("İ", "i").replace("I", "ı").replace("Ş", "ş").replace("Ğ", "ğ").replace("Ü", "
+    t = str(text).strip()
+    t = t.replace("İ", "i").replace("I", "ı")
+    t = t.replace("Ş", "ş").replace("Ğ", "ğ")
+    t = t.replace("Ü", "ü").replace("Ç", "ç")
+    return t.lower()
+
+def dinamik_renk_kurali_hibrit(val, page_type="standart"):
+    try:
+        if isinstance(val, str) and '%' in val:
+            v = float(val.replace('%', '').replace(',', '.')) / 100
+        else:
+            v = float(val)
+            if v > 5.0: v = v / 100.0
+        
+        if page_type == "verimlilik":
+            if v >= 0.80: return 'color: #10b981; font-weight: bold;'
+            return 'color: #ef4444; font-weight: bold;'
+        elif page_type == "kriter":
+            if v <= 0.20: return 'color: #10b981; font-weight: bold;'
+            return 'color: #ef4444; font-weight: bold;'
+        elif page_type == "gelme":
+            if v >= 0.40: return 'color: #10b981; font-weight: bold;'
+            return 'color: #ef4444; font-weight: bold;'
+        else:
+            if v >= 1.0: return 'color: #1
