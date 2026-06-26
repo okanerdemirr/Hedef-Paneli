@@ -6,7 +6,7 @@ import plotly.express as px
 
 st.set_page_config(page_title="Pano", layout="wide")
 
-# Sağa taşmayı ve kırpılmayı önlemek amacıyla tüm CSS blokları alt alta küçük parçalara bölündü
+# Kırpılmayı önlemek amacıyla tüm CSS blokları alt alta küçük parçalara bölündü
 css = '<style>'
 css += '.main-title {'
 css += ' font-size: 40px !important;'
@@ -33,52 +33,44 @@ css += ' border-left: 6px solid #ff007f;'
 css += ' padding-left: 15px;'
 css += ' text-shadow: 0 0 10px rgba(0, 229, 255, 0.2);'
 css += '}'
-css += 'div[data-testid="column"] {'
+# Her kutunun farklı renk çerçeve alabilmesi için özel kol sınıfları tanımlandı
+css += 'div[data-testid="column"]:nth-of-type(1) {'
 css += ' background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%) !important;'
-css += ' border: 2px solid #334155 !important;'
-css += ' padding: 22px !important;'
-css += ' border-radius: 16px !important;'
-css += ' box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3) !important;'
-css += ' transition: all 0.3s ease;'
+css += ' border: 2px solid #ff007f !important;'
+css += ' padding: 22px !important; border-radius: 16px !important;'
+css += ' box-shadow: 0 0 15px rgba(255, 0, 127, 0.2) !important; transition: all 0.3s ease;'
 css += '}'
-css += 'div[data-testid="column"]:hover {'
-css += ' border-color: #00e5ff !important;'
-css += ' box-shadow: 0 0 20px rgba(0, 229, 255, 0.2) !important;'
-css += ' transform: translateY(-2px);'
+css += 'div[data-testid="column"]:nth-of-type(2) {'
+css += ' background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%) !important;'
+css += ' border: 2px solid #00e5ff !important;'
+css += ' padding: 22px !important; border-radius: 16px !important;'
+css += ' box-shadow: 0 0 15px rgba(0, 229, 255, 0.2) !important; transition: all 0.3s ease;'
 css += '}'
-css += '.card-title {'
-css += ' font-size: 15px !important;'
-css += ' font-weight: 800 !important;'
-css += ' color: #00e5ff;'
-css += ' text-transform: uppercase;'
-css += ' letter-spacing: 1.5px;'
-css += ' margin-bottom: 12px;'
+css += 'div[data-testid="column"]:nth-of-type(3) {'
+css += ' background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%) !important;'
+css += ' border: 2px solid #ffeb3b !important;'
+css += ' padding: 22px !important; border-radius: 16px !important;'
+css += ' box-shadow: 0 0 15px rgba(255, 235, 59, 0.2) !important; transition: all 0.3s ease;'
 css += '}'
+css += 'div[data-testid="column"]:nth-of-type(4) {'
+css += ' background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%) !important;'
+css += ' border: 2px solid #9c27b0 !important;'
+css += ' padding: 22px !important; border-radius: 16px !important;'
+css += ' box-shadow: 0 0 15px rgba(156, 39, 176, 0.2) !important; transition: all 0.3s ease;'
+css += '}'
+css += 'div[data-testid="column"]:nth-of-type(5) {'
+css += ' background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%) !important;'
+css += ' border: 2px solid #ff5722 !important;'
+css += ' padding: 22px !important; border-radius: 16px !important;'
+css += ' box-shadow: 0 0 15px rgba(255, 87, 34, 0.2) !important; transition: all 0.3s ease;'
+css += '}'
+css += 'div[data-testid="column"]:hover { transform: translateY(-3px) !important; }'
+css += '.card-title { font-size: 15px !important; font-weight: 800 !important; color: #00e5ff; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 12px; }'
 css += 'div[data-testid="stMetricLabel"] { display: none !important; }'
-css += 'div[data-testid="stMetricValue"] {'
-css += ' font-size: 32px !important;'
-css += ' font-weight: 800 !important;'
-css += ' color: #ffffff !important;'
-css += '}'
-css += 'div[data-testid="stMetricDelta"] > div {'
-css += ' background-color: rgba(16, 185, 129, 0.2) !important;'
-css += ' color: #10b981 !important;'
-css += ' padding: 4px 10px !important;'
-css += ' border-radius: 6px !important;'
-css += ' font-weight: 700 !important;'
-css += ' font-size: 15px !important;'
-css += '}'
-css += 'button[data-baseweb="tab"] {'
-css += ' font-size: 18px !important;'
-css += ' font-weight: 700 !important;'
-css += ' color: #94a3b8 !important;'
-css += ' padding: 12px 24px !important;'
-css += '}'
-css += 'button[data-baseweb="tab"][aria-selected="true"] {'
-css += ' color: #ff007f !important;'
-css += ' border-bottom-color: #ff007f !important;'
-css += ' background-color: rgba(255, 0, 127, 0.05) !important;'
-css += '}'
+css += 'div[data-testid="stMetricValue"] { font-size: 32px !important; font-weight: 800 !important; color: #ffffff !important; }'
+css += 'div[data-testid="stMetricDelta"] > div { background-color: rgba(16, 185, 129, 0.2) !important; color: #10b981 !important; padding: 4px 10px !important; border-radius: 6px !important; font-weight: 700 !important; font-size: 15px !important; }'
+css += 'button[data-baseweb="tab"] { font-size: 18px !important; font-weight: 700 !important; color: #94a3b8 !important; padding: 12px 24px !important; }'
+css += 'button[data-baseweb="tab"][aria-selected="true"] { color: #ff007f !important; border-bottom-color: #ff007f !important; background-color: rgba(255, 0, 127, 0.05) !important; }'
 css += '</style>'
 st.markdown(css, unsafe_allow_html=True)
 
@@ -141,25 +133,17 @@ def dinamik_renk_kurali_hibrit(val, page_type="standart"):
                 v = v / 100.0
         
         if page_type == "verimlilik":
-            if v >= 0.80:
-                return 'color: #10b981; font-weight: bold;'
+            if v >= 0.80: return 'color: #10b981; font-weight: bold;'
             return 'color: #ff007f; font-weight: bold;'
-            
         elif page_type == "kriter":
-            if v <= 0.20:
-                return 'color: #10b981; font-weight: bold;'
+            if v <= 0.20: return 'color: #10b981; font-weight: bold;'
             return 'color: #ff007f; font-weight: bold;'
-            
         elif page_type == "gelme":
-            if v >= 0.40:
-                return 'color: #10b981; font-weight: bold;'
+            if v >= 0.40: return 'color: #10b981; font-weight: bold;'
             return 'color: #ff007f; font-weight: bold;'
-            
         else:
-            if v >= 1.0:
-                return 'color: #10b981; font-weight: bold;'
-            if v >= 0.8:
-                return 'color: #ffeb3b; font-weight: bold;'
+            if v >= 1.0: return 'color: #10b981; font-weight: bold;'
+            if v >= 0.8: return 'color: #ffeb3b; font-weight: bold;'
             return 'color: #ff007f; font-weight: bold;'
     except: return ''
 
